@@ -1,16 +1,25 @@
+import 'dart:developer' as dev;
+
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:boel_downloader/go_router/router.dart';
-import 'package:boel_downloader/pages/media_provider.dart';
+import 'package:boel_downloader/services/media_provider.dart';
 // import 'package:boel_downloader/pages/player_page.dart';
 import 'package:boel_downloader/services/download_service.dart';
 import 'package:ffmpeg_helper/ffmpeg_helper.dart';
-import 'package:media_kit/media_kit.dart';
+import 'package:flutter/foundation.dart';
+// import 'package:media_kit/media_kit.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:logging/logging.dart';
 
 void main() async {
+  Logger.root.level = kDebugMode ? Level.FINE : Level.INFO;
+  Logger.root.onRecord.listen((record) {
+    dev.log(record.message, time: record.time, level: record.level.value, name: record.loggerName, zone: record.zone, error: record.error, stackTrace: record.stackTrace);
+  });
+
   await FFMpegHelper.instance.initialize();
-  MediaKit.ensureInitialized();
+  // MediaKit.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [

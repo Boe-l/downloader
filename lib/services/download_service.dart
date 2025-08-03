@@ -1,12 +1,15 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:boel_downloader/services/enums.dart';
 import 'package:boel_downloader/services/shared_prefs.dart';
 import 'package:boel_downloader/widgets/toast.dart';
 import 'package:ffmpeg_helper/ffmpeg_helper.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 
 class DownloadItem {
   final String id;
@@ -74,8 +77,8 @@ class DownloadService with ChangeNotifier {
   Future<void> startDownload(Video video, BuildContext context, MediaFormat type) async {
     String? savedPath = await SharedPrefs().getPath();
     Directory directory = Directory(savedPath ?? (await getDownloadsDirectory())!.path);
-    // Only check FFmpeg setup for MP4 downloads
-    if (type == MediaFormat.mp4) {
+    // Only check FFmpeg setup for downloads
+    if (context.mounted) {
       await _checkFFmpegSetup(context);
     }
     // Save the selected format to SharedPrefs
@@ -94,32 +97,64 @@ class DownloadService with ChangeNotifier {
       }
 
       // Definir o diretório de downloads
-
       final safeTitle = video.title.replaceAll(RegExp(r'[^\w\s-]', unicode: true), '').replaceAll(' ', '_');
       final outputExtension = type == MediaFormat.mp3 ? '.mp3' : '.mp4';
       final outputPath = '${directory.path}/$safeTitle$outputExtension';
 
       // Baixar stream de áudio
       final audioStreamInfo = audioStreams.first; // Melhor qualidade de áudio
-      final audioFilePath = type == MediaFormat.mp3
-          ? outputPath // Save directly to output for MP3
-          : '${directory.path}/${video.id.value}_audio_temp.m4a'; // Temporary for MP4
-      await _downloadStream(video, audioStreamInfo, audioFilePath, DownloadStatus.downloading, type);
+      final tempAudioPath = '${directory.path}/${video.id.value}_audio_temp.m4a';
+      await _downloadStream(video, audioStreamInfo, tempAudioPath, DownloadStatus.downloading, type);
 
       if (type == MediaFormat.mp3) {
-        // Para MP3, download concluído após salvar o áudio
-        showToast(
-          context: context,
-          builder: ToastWarning(title: 'Download finalizado.', subtitle: '"${video.title}"', button: false).show,
-          location: ToastLocation.bottomRight,
-        );
+        // Converter o arquivo de áudio para MP3 verdadeiro
+        final cliCommand = FFMpegCommand(
+          inputs: [FFMpegInput.asset(tempAudioPath)],
+          args: [const CopyVideoCodecArgument(), const AudioBitrateArgument(192000), const OverwriteArgument()],
 
-        // Atualizar status para concluído
-        final index = _downloads.indexWhere((item) => item.id == video.id.value);
-        if (index != -1) {
-          _downloads[index] = _downloads[index].copyWith(status: DownloadStatus.completed, progress: 1.0, filePath: outputPath);
-          notifyListeners();
+          outputFilepath: outputPath,
+        );
+        final thumbnailResponse = await http.get(Uri.parse(video.thumbnails.mediumResUrl));
+        print(video.thumbnails.mediumResUrl);
+        if (thumbnailResponse.statusCode != 200) {
+          throw Exception('Failed to download thumbnail');
         }
+        final thumbnailBytes = thumbnailResponse.bodyBytes;
+        await _ffmpeg.runAsync(
+          cliCommand,
+          statisticsCallback: (Statistics statistics) {},
+          onComplete: (File? outputFile) async {
+            if (outputFile == null) {
+              throw Exception('Falha ao converter áudio para MP3');
+            }
+            // Limpar arquivo temporário
+            updateMetadata(outputFile, (metadata) {
+              metadata.setTitle(video.title);
+              metadata.setArtist(video.author);
+              // metadata.setAlbum(video.);
+              metadata.setTrackNumber(1);
+              // metadata.setYear(DateTime(2014));
+              // metadata.setLyrics("I'm singing");
+              metadata.setGenres(["Baixador do Boel"]);
+              metadata.setPictures([Picture(thumbnailBytes, "image/jpeg", PictureType.coverFront)]);
+            });
+
+            await File(tempAudioPath).delete();
+            if (context.mounted) {
+              showToast(
+                context: context,
+                builder: ToastWarning(title: 'Download finalizado.', subtitle: '"${video.title}"', button: false).show,
+                location: ToastLocation.bottomRight,
+              );
+            }
+            // Atualizar status para concluído
+            final index = _downloads.indexWhere((item) => item.id == video.id.value);
+            if (index != -1) {
+              _downloads[index] = _downloads[index].copyWith(status: DownloadStatus.completed, progress: 1.0, filePath: outputPath);
+              notifyListeners();
+            }
+          },
+        );
       } else {
         // Para MP4, baixar vídeo e combinar com áudio
         final videoStreams = manifest.videoOnly.sortByVideoQuality();
@@ -141,16 +176,14 @@ class DownloadService with ChangeNotifier {
 
         // Combinar vídeo e áudio com FFmpeg
         final cliCommand = FFMpegCommand(
-          inputs: [FFMpegInput.asset(videoFilePath), FFMpegInput.asset(audioFilePath)],
+          inputs: [FFMpegInput.asset(videoFilePath), FFMpegInput.asset(tempAudioPath)],
           args: [const CopyVideoCodecArgument(), const CopyAudioCodecArgument(), const OverwriteArgument()],
           outputFilepath: outputPath,
         );
 
         await _ffmpeg.runAsync(
           cliCommand,
-          statisticsCallback: (Statistics statistics) {
-            // Pode usar para logs ou progresso adicional
-          },
+          statisticsCallback: (Statistics statistics) {},
           onComplete: (File? outputFile) async {
             if (outputFile == null) {
               throw Exception('Falha ao combinar vídeo e áudio');
@@ -163,15 +196,14 @@ class DownloadService with ChangeNotifier {
             // Limpar arquivos temporários
             await Future.delayed(Duration(milliseconds: 1000));
             await File(videoFilePath).delete();
-            await File(audioFilePath).delete();
+            await File(tempAudioPath).delete();
+            // Atualizar status para concluído
+            if (index != -1) {
+              _downloads[index] = _downloads[index].copyWith(status: DownloadStatus.completed, progress: 1.0, filePath: outputPath);
+              notifyListeners();
+            }
           },
         );
-
-        // Atualizar status para concluído
-        if (index != -1) {
-          _downloads[index] = _downloads[index].copyWith(status: DownloadStatus.completed, progress: 1.0, filePath: outputPath);
-          notifyListeners();
-        }
       }
     } catch (e) {
       // Atualizar status para falha
@@ -181,12 +213,6 @@ class DownloadService with ChangeNotifier {
         notifyListeners();
       }
       print('Erro: $e');
-      // showToast(
-      //   context,
-      //   title: const Text('Erro no Download'),
-      //   description: Text('Falha ao baixar ${video.title}: $e'),
-      //   variant: ToastVariant.destructive,
-      // );
     }
   }
 
