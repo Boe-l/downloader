@@ -14,11 +14,10 @@ class _SongListState extends State<SongList> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      constraints: const BoxConstraints(maxWidth: 300),
-      height: double.infinity,
-      child: Column(
-        children: [
-          Flexible(
+      constraints: BoxConstraints(maxWidth: 300),
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Button(
@@ -31,12 +30,14 @@ class _SongListState extends State<SongList> {
               ),
             ),
           ),
-          Expanded(
+          SliverFillRemaining(
             child: Selector<MediaProvider, int>(
               selector: (_, provider) => provider.currentIndex,
               builder: (context, currentIndex, child) {
                 final provider = context.read<MediaProvider>();
                 return ListView.builder(
+                  // Como estamos dentro de um Sliver, usamos ListView.builder com physics ajustado
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: provider.mediaFiles.length,
                   itemBuilder: (context, index) {
                     return SongItem(

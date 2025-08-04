@@ -1,10 +1,6 @@
-import 'package:boel_downloader/services/enums.dart';
+import 'package:boel_downloader/models/enums.dart';
 import 'package:boel_downloader/services/shared_prefs.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-
-// Assume SharedPrefs class is available as provided
-
-// Define the enum for formats
 
 class FormatWidget extends StatefulWidget {
   final ValueChanged<MediaFormat>? onFormatChanged;
@@ -29,14 +25,13 @@ class _FormatWidgetState extends State<FormatWidget> {
     final sharedPrefs = SharedPrefs();
     final lastFormat = await sharedPrefs.getLastFormat();
     setState(() {
-      // Map the string to MediaFormat enum
       _selectedFormat = lastFormat == 'MP4' ? MediaFormat.mp4 : MediaFormat.mp3; // Default to mp3 if null or invalid
     });
+    widget.onFormatChanged!(_selectedFormat);
   }
 
   Future<void> _saveFormat(MediaFormat format) async {
     final sharedPrefs = SharedPrefs();
-    // Save the format as a string ("MP3" or "MP4")
     await sharedPrefs.saveLastFormat(format == MediaFormat.mp3 ? 'MP3' : 'MP4');
   }
 
@@ -80,6 +75,5 @@ class _FormatWidgetState extends State<FormatWidget> {
     );
   }
 
-  // Getter to access the selected format
   MediaFormat get selectedFormat => _selectedFormat;
 }

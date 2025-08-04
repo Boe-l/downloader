@@ -1,6 +1,6 @@
 import 'package:boel_downloader/pages/file_path_widget.dart';
 import 'package:boel_downloader/services/download_service.dart';
-import 'package:boel_downloader/services/enums.dart';
+import 'package:boel_downloader/models/enums.dart';
 import 'package:boel_downloader/services/shared_prefs.dart';
 import 'package:boel_downloader/widgets/format_widget.dart';
 import 'package:boel_downloader/widgets/toast.dart';
