@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
-import 'package:boel_downloader/services/media_provider.dart';
+import 'package:boel_downloader/models/media.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
@@ -28,12 +28,11 @@ class _SongItemState extends State<SongItem> {
       final metadata = readMetadata(widget.media.file, getImage: true);
       title = widget.media.title.isNotEmpty ? widget.media.title : widget.media.file.path;
 
-      author = widget.media.author.isNotEmpty ? widget.media.author : (metadata.artist ?? '');
+      author = widget.media.artist.isNotEmpty ? widget.media.artist : (metadata.artist ?? '');
       image = widget.media.image ?? (metadata.pictures.isNotEmpty ? metadata.pictures[0].bytes : null);
     } catch (e) {
-      print('Metadata parsing error for ${widget.media.file.path}: $e');
       title = widget.media.title.isNotEmpty ? widget.media.title : widget.media.file.path;
-      author = widget.media.author.isNotEmpty ? widget.media.author : '';
+      author = widget.media.artist.isNotEmpty ? widget.media.artist : '';
       image = widget.media.image;
     }
   }

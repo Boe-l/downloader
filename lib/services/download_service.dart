@@ -1,6 +1,5 @@
 import 'dart:io';
-import 'dart:typed_data';
-import 'package:boel_downloader/services/enums.dart';
+import 'package:boel_downloader/models/enums.dart';
 import 'package:boel_downloader/services/shared_prefs.dart';
 import 'package:boel_downloader/widgets/toast.dart';
 import 'package:ffmpeg_helper/ffmpeg_helper.dart';
@@ -47,17 +46,17 @@ class DownloadService with ChangeNotifier {
   double get ffmpegDownloadProgress => _ffmpegDownloadProgress;
 
   Future<void> _checkFFmpegSetup(BuildContext context) async {
-    if (_ffmpegDownloadProgress >= 1.0) {
+    if (await _ffmpeg.isFFMpegPresent() || _ffmpegDownloadProgress >= 1.0) {
       return; // FFmpeg já está configurado
     }
-
-    if (Platform.isWindows) {
+    if (context.mounted) {
       showToast(
         context: context,
         builder: ToastWarning(title: 'Configurando FFmpeg...', subtitle: '"Download em andamento..."', button: false).show,
         location: ToastLocation.bottomRight,
       );
-
+    }
+    if (Platform.isWindows) {
       bool success = await _ffmpeg.setupFFMpegOnWindows(
         onProgress: (FFMpegProgress progress) {
           _ffmpegDownloadProgress = progress.downloaded / (progress.fileSize != 0 ? progress.fileSize : 1);
@@ -70,7 +69,14 @@ class DownloadService with ChangeNotifier {
       }
 
       _ffmpegDownloadProgress = 1.0;
-      notifyListeners();
+      if (context.mounted) {
+        showToast(
+          context: context,
+          builder: ToastWarning(title: 'Configurando FFmpeg...', subtitle: '"Download concluido."', button: false).show,
+          location: ToastLocation.bottomRight,
+        );
+        notifyListeners();
+      }
     }
   }
 
@@ -78,6 +84,7 @@ class DownloadService with ChangeNotifier {
     String? savedPath = await SharedPrefs().getPath();
     Directory directory = Directory(savedPath ?? (await getDownloadsDirectory())!.path);
     // Only check FFmpeg setup for downloads
+
     if (context.mounted) {
       await _checkFFmpegSetup(context);
     }
@@ -97,7 +104,7 @@ class DownloadService with ChangeNotifier {
       }
 
       // Definir o diretório de downloads
-      final safeTitle = video.title.replaceAll(RegExp(r'[^\w\s-]', unicode: true), '').replaceAll(' ', '_');
+      final safeTitle = video.title.replaceAll(RegExp(r'[^\w\s-]', unicode: true), '');
       final outputExtension = type == MediaFormat.mp3 ? '.mp3' : '.mp4';
       final outputPath = '${directory.path}/$safeTitle$outputExtension';
 
@@ -115,7 +122,6 @@ class DownloadService with ChangeNotifier {
           outputFilepath: outputPath,
         );
         final thumbnailResponse = await http.get(Uri.parse(video.thumbnails.mediumResUrl));
-        print(video.thumbnails.mediumResUrl);
         if (thumbnailResponse.statusCode != 200) {
           throw Exception('Failed to download thumbnail');
         }
@@ -212,7 +218,6 @@ class DownloadService with ChangeNotifier {
         _downloads[index] = _downloads[index].copyWith(status: DownloadStatus.failed, progress: 0.0);
         notifyListeners();
       }
-      print('Erro: $e');
     }
   }
 
@@ -265,11 +270,9 @@ class DownloadService with ChangeNotifier {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
 
     if (selectedDirectory != null) {
-      print('Selected folder path: $selectedDirectory');
       await SharedPrefs().savePath(selectedDirectory);
       return true;
     } else {
-      print('Folder selection cancelled.');
       return false;
     }
   }

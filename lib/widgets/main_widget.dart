@@ -1,4 +1,5 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:boel_downloader/widgets/animated_media_card.dart';
 import 'package:boel_downloader/widgets/windows.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -21,15 +22,10 @@ class _MainWidgetState extends State<MainWidget> {
   }
 
   NavigationLabel buildLabel(String label) {
-    return NavigationLabel(
-      alignment: Alignment.centerLeft,
-      child: Text(label).semiBold().muted(),
-      // padding: EdgeInsets.zero,
-    );
+    return NavigationLabel(alignment: Alignment.centerLeft, child: Text(label).semiBold().muted());
   }
 
   int _getSelectedIndexFromPath(String currentPath) {
-    // Remove qualquer subrota (e.g., '/dict/entry' -> '/dict')
     final basePath = currentPath.split('/').firstWhere((p) => p.isNotEmpty, orElse: () => '');
     switch (basePath) {
       case '':
@@ -46,7 +42,6 @@ class _MainWidgetState extends State<MainWidget> {
         return 5;
       case 'settings':
         return 6;
-
       default:
         return 0; // Fallback para '/'
     }
@@ -55,7 +50,6 @@ class _MainWidgetState extends State<MainWidget> {
   @override
   Widget build(BuildContext context) {
     final currentPath = GoRouterState.of(context).uri.toString();
-    // Atualiza o índice selecionado com base no caminho atual
     selected = _getSelectedIndexFromPath(currentPath);
 
     final theme = Theme.of(context);
@@ -108,42 +102,46 @@ class _MainWidgetState extends State<MainWidget> {
                 child: const Icon(Icons.menu),
               ),
               const NavigationDivider(),
-              // buildLabel('Início'),
               buildButton('Baixar', HugeIcons.strokeRoundedYoutube),
               buildButton('Downloads', HugeIcons.strokeRoundedDownloadSquare02),
-
               buildButton('Playlists', HugeIcons.strokeRoundedPlayList),
               buildButton('Player', HugeIcons.strokeRoundedMusicNote01),
               const NavigationDivider(),
-              // buildLabel('Histórico'),
               buildButton('Histórico', HugeIcons.strokeRoundedClock02),
               buildButton('Favoritos', HugeIcons.strokeRoundedFavourite),
-              // const NavigationDivider(),
-              // buildLabel('Movie'),
-              // buildButton('Action', Icons.movie_creation_outlined),
-              // buildButton('Horror', Icons.movie_creation_outlined),
-              // buildButton('Thriller', Icons.movie_creation_outlined),
               const NavigationDivider(),
-              // buildLabel('Short Films'),
-              // buildButton('Action', Icons.movie_creation_outlined),
               buildButton('Configurações', HugeIcons.strokeRoundedSettings01),
             ],
           ),
           const VerticalDivider(),
-          Flexible(
-            child: Stack(
-              children: [
-                widget.shell,
-                SizedBox(
-                  height: 30,
-                  child: Row(
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SizedBox(
+                  width: constraints.maxWidth, // Ensure finite width
+                  child: Stack(
                     children: [
-                      Expanded(child: MoveWindow()),
-                      WindowButtons(),
+                      widget.shell, // Background content
+                      Align(
+                        alignment: Alignment.bottomLeft,
+                        child: Padding(padding: const EdgeInsets.only(left: 20, bottom: 10, right: 20), child: AnimatedMediaCard()),
+                      ),
+                      Align(
+                        alignment: Alignment.topCenter,
+                        child: SizedBox(
+                          height: 30,
+                          child: Row(
+                            children: [
+                              Expanded(child: MoveWindow()),
+                              WindowButtons(),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],

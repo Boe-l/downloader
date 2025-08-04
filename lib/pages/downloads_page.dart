@@ -1,4 +1,4 @@
-import 'package:boel_downloader/services/enums.dart';
+import 'package:boel_downloader/models/enums.dart';
 import 'package:boel_downloader/tools/url_lancher.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';

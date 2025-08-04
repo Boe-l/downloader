@@ -8,29 +8,33 @@ class EffectKnobs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: [
-          Expanded(
-            child: Wrap(
-              spacing: 8.0,
-              runSpacing: 8.0,
+    return Column(
+      children: [
+        Card(
+          child: SizedBox(
+            width: 1000,
+            child: Row(
+              // spacing: 0.0,
+
+              // runSpacing: 2.0,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              // mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Biquad Filter
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        const Text('Biquad Filter'),
+                        Padding(padding: const EdgeInsets.all(8.0), child: const Text('Biquad Filter')),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['biquadFrequency']!,
+                          selector: (_, provider) => provider.filterParams['biquadFrequency']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Biquad Frequency',
-                            tooltip: (context) => Text('Biquad Frequency'),
+                            tooltip: (context) => Card(child: Text('Biquad Frequency')),
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('biquadFrequency', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('biquadFrequency', value),
                               min: 0.0,
                               max: 22050.0,
                               size: 50,
@@ -43,13 +47,13 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['biquadResonance']!,
+                          selector: (_, provider) => provider.filterParams['biquadResonance']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Biquad Resonance',
-                            tooltip: (context) => Text('Biquad Resonance'),
+                            tooltip: (context) => Card(child: Text('Biquad Resonance')),
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('biquadResonance', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('biquadResonance', value),
                               min: 0.1,
                               max: 10.0,
                               size: 50,
@@ -62,32 +66,30 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, bool>(
-                          selector: (_, provider) => provider.currentMedia!.filterStates['biquad']!,
-                          builder: (_, isActive, __) => Toggle(
-                            value: isActive,
-                            child: Text(isActive ? 'Biquad On' : 'Biquad Off'),
-                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.toggleFilter('biquad'),
-                          ),
+                          selector: (_, provider) => provider.filterStates['biquad']!,
+                          builder: (_, isActive, __) =>
+                              Toggle(value: isActive, child: Text(isActive ? 'Biquad On' : 'Biquad Off'), onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('biquad')),
                         ),
                       ],
                     ),
                   ),
                 ),
                 // Echo Filter
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(
+                SizedBox(width: 1, height: 300, child: VerticalDivider()),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        const Text('Echo Filter'),
+                        Padding(padding: const EdgeInsets.all(8.0), child: const Text('Echo Filter')),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['echoWet']!,
+                          selector: (_, provider) => provider.filterParams['echoWet']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Echo Wet',
-                            tooltip: (context) => Text('Echo Wet'),
+                            tooltip: (context) => Card(child: Text('Echo Wet')),
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('echoWet', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('echoWet', value),
                               min: 0.0,
                               max: 1.0,
                               size: 50,
@@ -100,13 +102,13 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['echoDelay']!,
+                          selector: (_, provider) => provider.filterParams['echoDelay']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Echo Delay',
-                            tooltip: (context) => Text('Echo Delay'),
+                            tooltip: (context) => Card(child: Text('Echo Delay')),
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('echoDelay', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('echoDelay', value),
                               min: 0.0,
                               max: 1.0,
                               size: 50,
@@ -119,13 +121,13 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['echoDecay']!,
+                          selector: (_, provider) => provider.filterParams['echoDecay']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Echo Decay',
-                            tooltip: (context) => Text('Echo Decay'),
+                            tooltip: (context) => Card(child: Text('Echo Decay')),
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('echoDecay', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('echoDecay', value),
                               min: 0.0,
                               max: 1.0,
                               size: 50,
@@ -138,128 +140,127 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, bool>(
-                          selector: (_, provider) => provider.currentMedia!.filterStates['echo']!,
-                          builder: (_, isActive, __) => Toggle(
-                            value: isActive,
-                            child: Text(isActive ? 'Echo On' : 'Echo Off'),
-                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.toggleFilter('echo'),
-                          ),
+                          selector: (_, provider) => provider.filterStates['echo']!,
+                          builder: (_, isActive, __) =>
+                              Toggle(value: isActive, child: Text(isActive ? 'Echo On' : 'Echo Off'), onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('echo')),
                         ),
                       ],
                     ),
                   ),
                 ),
                 // Freeverb Filter
+                SizedBox(width: 1, height: 300, child: VerticalDivider()),
+
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Card(
-                    child: Column(
-                      children: [
-                        const Text('Freeverb Filter'),
-                        Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['freeverbWet']!,
-                          builder: (_, value, __) => Tooltip(
-                            // message: 'Freeverb Wet',
-                            tooltip: (context) => Text('Freeverb Wet'),
-                            child: DialKnob(
-                              value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('freeverbWet', value),
-                              min: 0.0,
-                              max: 1.0,
-                              size: 50,
-                              trackColor: Colors.gray,
-                              levelColorStart: Colors.green,
-                              levelColorEnd: Colors.red,
-                              knobColor: Colors.blue,
-                              indicatorColor: Colors.white,
-                            ),
+                  child: Column(
+                    children: [
+                      Padding(padding: const EdgeInsets.all(8.0), child: const Text('Freeverb Filter')),
+                      Selector<MediaProvider, double>(
+                        selector: (_, provider) => provider.filterParams['freeverbWet']!,
+                        builder: (_, value, __) => Tooltip(
+                          // message: 'Freeverb Wet',
+                          tooltip: (context) => Card(child: Text('Freeverb Wet')),
+                          child: DialKnob(
+                            value: value,
+                            onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('freeverbWet', value),
+                            min: 0.0,
+                            max: 1.0,
+                            size: 50,
+                            trackColor: Colors.gray,
+                            levelColorStart: Colors.green,
+                            levelColorEnd: Colors.red,
+                            knobColor: Colors.blue,
+                            indicatorColor: Colors.white,
                           ),
                         ),
-                        Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['freeverbRoomSize']!,
-                          builder: (_, value, __) => Tooltip(
-                            // message: 'Freeverb Room Size',
-                            tooltip: (context) => Text('Freeverb Room Size'),
-                            child: DialKnob(
-                              value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('freeverbRoomSize', value),
-                              min: 0.0,
-                              max: 1.0,
-                              size: 50,
-                              trackColor: Colors.gray,
-                              levelColorStart: Colors.green,
-                              levelColorEnd: Colors.red,
-                              knobColor: Colors.blue,
-                              indicatorColor: Colors.white,
-                            ),
+                      ),
+                      Selector<MediaProvider, double>(
+                        selector: (_, provider) => provider.filterParams['freeverbRoomSize']!,
+                        builder: (_, value, __) => Tooltip(
+                          // message: 'Freeverb Room Size',
+                          tooltip: (context) => Card(child: Text('Freeverb Room Size')),
+                          child: DialKnob(
+                            value: value,
+                            onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('freeverbRoomSize', value),
+                            min: 0.0,
+                            max: 1.0,
+                            size: 50,
+                            trackColor: Colors.gray,
+                            levelColorStart: Colors.green,
+                            levelColorEnd: Colors.red,
+                            knobColor: Colors.blue,
+                            indicatorColor: Colors.white,
                           ),
                         ),
-                        Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['freeverbDamping']!,
-                          builder: (_, value, __) => Tooltip(
-                            // message: 'Freeverb Damping',
-                            tooltip: (context) => Text('Freeverb Damping'),
-                            child: DialKnob(
-                              value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('freeverbDamping', value),
-                              min: 0.0,
-                              max: 1.0,
-                              size: 50,
-                              trackColor: Colors.gray,
-                              levelColorStart: Colors.green,
-                              levelColorEnd: Colors.red,
-                              knobColor: Colors.blue,
-                              indicatorColor: Colors.white,
-                            ),
+                      ),
+                      Selector<MediaProvider, double>(
+                        selector: (_, provider) => provider.filterParams['freeverbDamping']!,
+                        builder: (_, value, __) => Tooltip(
+                          // message: 'Freeverb Damping',
+                          tooltip: (context) => Card(child: Text('Freeverb Damping')),
+                          child: DialKnob(
+                            value: value,
+                            onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('freeverbDamping', value),
+                            min: 0.0,
+                            max: 1.0,
+                            size: 50,
+                            trackColor: Colors.gray,
+                            levelColorStart: Colors.green,
+                            levelColorEnd: Colors.red,
+                            knobColor: Colors.blue,
+                            indicatorColor: Colors.white,
                           ),
                         ),
-                        Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['freeverbWidth']!,
-                          builder: (_, value, __) => Tooltip(
-                            // message: 'Freeverb Width',
-                            tooltip: (context) => Text('Freeverb Width'),
-                            child: DialKnob(
-                              value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('freeverbWidth', value),
-                              min: 0.0,
-                              max: 1.0,
-                              size: 50,
-                              trackColor: Colors.gray,
-                              levelColorStart: Colors.green,
-                              levelColorEnd: Colors.red,
-                              knobColor: Colors.blue,
-                              indicatorColor: Colors.white,
-                            ),
+                      ),
+                      Selector<MediaProvider, double>(
+                        selector: (_, provider) => provider.filterParams['freeverbWidth']!,
+                        builder: (_, value, __) => Tooltip(
+                          // message: 'Freeverb Width',
+                          tooltip: (context) => Card(child: Text('Freeverb Width')),
+                          child: DialKnob(
+                            value: value,
+                            onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('freeverbWidth', value),
+                            min: 0.0,
+                            max: 1.0,
+                            size: 50,
+                            trackColor: Colors.gray,
+                            levelColorStart: Colors.green,
+                            levelColorEnd: Colors.red,
+                            knobColor: Colors.blue,
+                            indicatorColor: Colors.white,
                           ),
                         ),
-                        Selector<MediaProvider, bool>(
-                          selector: (_, provider) => provider.currentMedia!.filterStates['freeverb']!,
-                          builder: (_, isActive, __) => Toggle(
-                            value: isActive,
-                            child: Text(isActive ? 'Freeverb On' : 'Freeverb Off'),
-                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.toggleFilter('freeverb'),
-                          ),
+                      ),
+                      Selector<MediaProvider, bool>(
+                        selector: (_, provider) => provider.filterStates['freeverb']!,
+                        builder: (_, isActive, __) => Toggle(
+                          value: isActive,
+                          child: Text(isActive ? 'Freeverb On' : 'Freeverb Off'),
+                          onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('freeverb'),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
                 // Pitch Shift Filter
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(
+                SizedBox(width: 1, height: 300, child: VerticalDivider()),
+
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        const Text('Pitch Shift Filter'),
+                        Padding(padding: const EdgeInsets.all(8.0), child: const Text('Pitch Shift Filter')),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['pitchShift']!,
+                          selector: (_, provider) => provider.filterParams['pitchShift']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Pitch Shift',
-                            tooltip: (context) => Text('Pitch Shift'),
+                            tooltip: (context) => Card(child: Text('Pitch Shift')),
 
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('pitchShift', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('pitchShift', value),
                               min: 0.0,
                               max: 2.0,
                               size: 50,
@@ -272,11 +273,11 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, bool>(
-                          selector: (_, provider) => provider.currentMedia!.filterStates['pitchShift']!,
+                          selector: (_, provider) => provider.filterStates['pitchShift']!,
                           builder: (_, isActive, __) => Toggle(
                             value: isActive,
                             child: Text(isActive ? 'Pitch Shift On' : 'Pitch Shift Off'),
-                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.toggleFilter('pitchShift'),
+                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('pitchShift'),
                           ),
                         ),
                       ],
@@ -284,21 +285,23 @@ class EffectKnobs extends StatelessWidget {
                   ),
                 ),
                 // Flanger Filter
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(
+                SizedBox(width: 1, height: 300, child: VerticalDivider()),
+
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        const Text('Flanger Filter'),
+                        Padding(padding: const EdgeInsets.all(8.0), child: const Text('Flanger Filter')),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['flangerWet']!,
+                          selector: (_, provider) => provider.filterParams['flangerWet']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Flanger Wet',
-                            tooltip: (context) => Text('Flanger Wet'),
+                            tooltip: (context) => Card(child: Text('Flanger Wet')),
 
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('flangerWet', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('flangerWet', value),
                               min: 0.0,
                               max: 1.0,
                               size: 50,
@@ -311,14 +314,14 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['flangerFreq']!,
+                          selector: (_, provider) => provider.filterParams['flangerFreq']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Flanger Frequency',
-                            tooltip: (context) => Text('Flanger Frequency'),
+                            tooltip: (context) => Card(child: Text('Flanger Frequency')),
 
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('flangerFreq', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('flangerFreq', value),
                               min: 0.1,
                               max: 10.0,
                               size: 50,
@@ -331,14 +334,14 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['flangerDelay']!,
+                          selector: (_, provider) => provider.filterParams['flangerDelay']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Flanger Delay',
-                            tooltip: (context) => Text('Flanger Delay'),
+                            tooltip: (context) => Card(child: Text('Flanger Delay')),
 
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('flangerDelay', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('flangerDelay', value),
                               min: 0.0001,
                               max: 0.01,
                               size: 50,
@@ -351,52 +354,56 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, bool>(
-                          selector: (_, provider) => provider.currentMedia!.filterStates['flanger']!,
+                          selector: (_, provider) => provider.filterStates['flanger']!,
                           builder: (_, isActive, __) => Toggle(
                             value: isActive,
                             child: Text(isActive ? 'Flanger On' : 'Flanger Off'),
-                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.toggleFilter('flanger'),
+                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('flanger'),
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                // Robotize Filter
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(
-                    child: Column(
-                      children: [
-                        const Text('Robotize Filter'),
-                        Selector<MediaProvider, bool>(
-                          selector: (_, provider) => provider.currentMedia!.filterStates['robotize']!,
-                          builder: (_, isActive, __) => Toggle(
-                            value: isActive,
-                            child: Text(isActive ? 'Robotize On' : 'Robotize Off'),
-                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.toggleFilter('robotize'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+                // // // Robotize Filter
+                // // SizedBox(width: 1, height: 300, child: VerticalDivider()),
+
+                // Expanded(
+                //   child: Padding(
+                //     padding: const EdgeInsets.all(8.0),
+                //     child: Column(
+                //       children: [
+                //         const Text('Robotize Filter'),
+                //         Selector<MediaProvider, bool>(
+                //           selector: (_, provider) => provider.filterStates['robotize']!,
+                //           builder: (_, isActive, __) => Toggle(
+                //             value: isActive,
+                //             child: Text(isActive ? 'Robotize On' : 'Robotize Off'),
+                //             onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('robotize'),
+                //           ),
+                //         ),
+                //       ],
+                //     ),
+                //   ),
+                // ),
                 // Bassboost Filter
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(
+                SizedBox(width: 1, height: 300, child: VerticalDivider()),
+
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        const Text('Bassboost Filter'),
+                        Padding(padding: const EdgeInsets.all(8.0), child: const Text('Bassboost Filter')),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['bassboostBoost']!,
+                          selector: (_, provider) => provider.filterParams['bassboostBoost']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Bassboost Boost',
-                            tooltip: (context) => Text('Bassboost Boost'),
+                            tooltip: (context) => Card(child: Text('Bassboost Boost')),
 
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('bassboostBoost', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('bassboostBoost', value),
                               min: 0.0,
                               max: 1.0,
                               size: 50,
@@ -409,11 +416,11 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, bool>(
-                          selector: (_, provider) => provider.currentMedia!.filterStates['bassboost']!,
+                          selector: (_, provider) => provider.filterStates['bassboost']!,
                           builder: (_, isActive, __) => Toggle(
                             value: isActive,
                             child: Text(isActive ? 'Bassboost On' : 'Bassboost Off'),
-                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.toggleFilter('bassboost'),
+                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('bassboost'),
                           ),
                         ),
                       ],
@@ -421,21 +428,23 @@ class EffectKnobs extends StatelessWidget {
                   ),
                 ),
                 // Lo-Fi Filter
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(
+                SizedBox(width: 1, height: 300, child: VerticalDivider()),
+
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
                       children: [
-                        const Text('Lo-Fi Filter'),
+                        Padding(padding: const EdgeInsets.all(8.0), child: const Text('Lo-Fi Filter')),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['lofiSampleRate']!,
+                          selector: (_, provider) => provider.filterParams['lofiSampleRate']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Lo-Fi Sample Rate',
-                            tooltip: (context) => Text('Lo-Fi Sample Rate'),
+                            tooltip: (context) => Card(child: Text('Lo-Fi Sample Rate')),
 
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('lofiSampleRate', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('lofiSampleRate', value),
                               min: 4000.0,
                               max: 44100.0,
                               size: 50,
@@ -448,12 +457,12 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['lofiBitDepth']!,
+                          selector: (_, provider) => provider.filterParams['lofiBitDepth']!,
                           builder: (_, value, __) => Tooltip(
-                            tooltip: (context) => Text('Lo-Fi Bit Depth'),
+                            tooltip: (context) => Card(child: Text('Lo-Fi Bit Depth')),
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('lofiBitDepth', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('lofiBitDepth', value),
                               min: 4.0,
                               max: 16.0,
                               size: 50,
@@ -466,13 +475,13 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, double>(
-                          selector: (_, provider) => provider.currentMedia!.filterParams['lofiWet']!,
+                          selector: (_, provider) => provider.filterParams['lofiWet']!,
                           builder: (_, value, __) => Tooltip(
                             // message: 'Lo-Fi Wet',
-                            tooltip: (context) => Text('Lo-Fi Wet'),
+                            tooltip: (context) => Card(child: Text('Lo-Fi Wet')),
                             child: DialKnob(
                               value: value,
-                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.setFilterParam('lofiWet', value),
+                              onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('lofiWet', value),
                               min: 0.0,
                               max: 1.0,
                               size: 50,
@@ -485,12 +494,9 @@ class EffectKnobs extends StatelessWidget {
                           ),
                         ),
                         Selector<MediaProvider, bool>(
-                          selector: (_, provider) => provider.currentMedia!.filterStates['lofi']!,
-                          builder: (_, isActive, __) => Toggle(
-                            value: isActive,
-                            child: Text(isActive ? 'Lo-Fi On' : 'Lo-Fi Off'),
-                            onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).currentMedia!.toggleFilter('lofi'),
-                          ),
+                          selector: (_, provider) => provider.filterStates['lofi']!,
+                          builder: (_, isActive, __) =>
+                              Toggle(value: isActive, child: Text(isActive ? 'Lo-Fi On' : 'Lo-Fi Off'), onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('lofi')),
                         ),
                       ],
                     ),
@@ -499,8 +505,8 @@ class EffectKnobs extends StatelessWidget {
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
