@@ -5,8 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-import '../services/shortcuts.dart';
-
 class MainWidget extends StatefulWidget {
   final StatefulNavigationShell shell;
   const MainWidget({super.key, required this.shell});

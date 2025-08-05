@@ -1,5 +1,4 @@
 import 'package:boel_downloader/widgets/song_list.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class AudioPlayerPage extends StatefulWidget {

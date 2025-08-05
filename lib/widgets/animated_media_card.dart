@@ -1,6 +1,5 @@
 import 'package:boel_downloader/pages/equalizer.dart';
 import 'package:boel_downloader/services/media_provider.dart';
-import 'package:boel_downloader/services/shortcuts.dart';
 import 'package:boel_downloader/widgets/effect_knobs.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:provider/provider.dart';

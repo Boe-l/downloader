@@ -1,13 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:rxdart/rxdart.dart';
 import 'media_provider.dart';
 
-/// Classe que encapsula a lógica de atalhos de teclado (solo e combinações).
-class TecladoOuvidor extends StatelessWidget {
+class TecladoOuvidor extends StatefulWidget {
   final Widget child;
 
   const TecladoOuvidor({super.key, required this.child});
+
+  @override
+  TecladoOuvidorState createState() => TecladoOuvidorState();
+}
+
+class TecladoOuvidorState extends State<TecladoOuvidor> {
+  DateTime? _lastSeekStart;
+  int _seekInterval = 5;
+  final _seekSubject = PublishSubject<bool>();
+
+  @override
+  void initState() {
+    super.initState();
+    _seekSubject.throttleTime(Duration(milliseconds: 80), trailing: false).listen((isForward) {
+      if (mounted) {
+        _handleSeek(context.read<MediaProvider>(), isForward);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _seekSubject.close();
+    super.dispose();
+  }
+
+  void _handleSeek(MediaProvider provider, bool isForward) {
+    final now = DateTime.now();
+
+    if (_lastSeekStart == null || now.difference(_lastSeekStart!).inMilliseconds > 500) {
+      _lastSeekStart = now;
+      _seekInterval = 5;
+    }
+
+    final durationPressed = now.difference(_lastSeekStart!).inMilliseconds;
+    _seekInterval = (5 + (durationPressed / 1000 * 3).clamp(0, 15)).toInt();
+
+    final currentPosition = provider.position.inSeconds;
+    final maxDuration = provider.duration.inSeconds;
+    final newPosition = isForward ? currentPosition + _seekInterval : currentPosition - _seekInterval;
+
+    final clampedPosition = newPosition.clamp(0, maxDuration);
+
+    if (clampedPosition >= 0 && clampedPosition <= maxDuration) {
+      provider.seek(Duration(seconds: clampedPosition));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,25 +107,25 @@ class TecladoOuvidor extends StatelessWidget {
                 ),
                 AumentarVolumeIntent: CallbackAction<AumentarVolumeIntent>(
                   onInvoke: (intent) {
-                    provider.setVolume(provider.player.state.volume + 0.07);
+                    provider.setVolume((provider.player.state.volume + 0.07).clamp(0.0, 1.0));
                     return null;
                   },
                 ),
                 DiminuirVolumeIntent: CallbackAction<DiminuirVolumeIntent>(
                   onInvoke: (intent) {
-                    provider.setVolume(provider.player.state.volume - 0.07);
+                    provider.setVolume((provider.player.state.volume - 0.07).clamp(0.0, 1.0));
                     return null;
                   },
                 ),
                 AvancarCtrlIntent: CallbackAction<AvancarCtrlIntent>(
                   onInvoke: (intent) {
-                    provider.seek(Duration(seconds: provider.position.inSeconds + 10));
+                    _seekSubject.add(true);
                     return null;
                   },
                 ),
                 RetrocederCtrlIntent: CallbackAction<RetrocederCtrlIntent>(
                   onInvoke: (intent) {
-                    provider.seek(Duration(seconds: provider.position.inSeconds - 10));
+                    _seekSubject.add(false);
                     return null;
                   },
                 ),
@@ -89,7 +136,7 @@ class TecladoOuvidor extends StatelessWidget {
                   },
                 ),
               },
-              child: Focus(autofocus: true, skipTraversal: true, canRequestFocus: true, child: child),
+              child: Focus(autofocus: true, skipTraversal: true, canRequestFocus: true, child: widget.child),
             ),
           );
         },
@@ -98,7 +145,6 @@ class TecladoOuvidor extends StatelessWidget {
   }
 }
 
-// Intenções para teclas solo
 class AvancarMusicaIntent extends Intent {}
 
 class RetrocederMusicaIntent extends Intent {}
@@ -109,7 +155,6 @@ class AumentarVolumeIntent extends Intent {}
 
 class DiminuirVolumeIntent extends Intent {}
 
-// Intenções para combinações de teclas
 class AvancarCtrlIntent extends Intent {}
 
 class RetrocederCtrlIntent extends Intent {}
