@@ -148,7 +148,7 @@ class _EqualizerState extends State<Equalizer> {
         Selector<MediaProvider, bool>(
           selector: (_, provider) => provider.filterStates['eq']!,
           builder: (_, isActive, __) =>
-              Toggle(value: isActive, child: Text(isActive ? 'Biquad On' : 'Biquad Off'), onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('eq')),
+              Toggle(value: isActive, child: Text(isActive ? 'EQ On' : 'EQ Off'), onChanged: (_) => Provider.of<MediaProvider>(context, listen: false).toggleFilter('eq')),
         ),
       ],
     );
