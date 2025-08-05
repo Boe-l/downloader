@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
+import '../services/shortcuts.dart';
+
 class MainWidget extends StatefulWidget {
   final StatefulNavigationShell shell;
   const MainWidget({super.key, required this.shell});
@@ -124,7 +126,7 @@ class _MainWidgetState extends State<MainWidget> {
                       widget.shell, // Background content
                       Align(
                         alignment: Alignment.bottomLeft,
-                        child: Padding(padding: const EdgeInsets.only(left: 20, bottom: 10, right: 20), child: AnimatedMediaCard()),
+                        child: Padding(padding: const EdgeInsets.only(left: 20, bottom: 10, right: 20), child: TecladoOuvidor(child: AnimatedMediaCard())),
                       ),
                       Align(
                         alignment: Alignment.topCenter,
