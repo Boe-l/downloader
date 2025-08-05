@@ -1,7 +1,8 @@
 import 'package:boel_downloader/services/media_provider.dart';
-import 'package:flutter_dial_knob/flutter_dial_knob.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+
+import 'dial_knob_custom.dart';
 
 class EffectKnobs extends StatelessWidget {
   const EffectKnobs({super.key});
@@ -32,7 +33,7 @@ class EffectKnobs extends StatelessWidget {
                           builder: (_, value, __) => Tooltip(
                             // message: 'Biquad Frequency',
                             tooltip: (context) => Card(child: Text('Biquad Frequency')),
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('biquadFrequency', value),
                               min: 0.0,
@@ -51,7 +52,7 @@ class EffectKnobs extends StatelessWidget {
                           builder: (_, value, __) => Tooltip(
                             // message: 'Biquad Resonance',
                             tooltip: (context) => Card(child: Text('Biquad Resonance')),
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('biquadResonance', value),
                               min: 0.1,
@@ -87,7 +88,7 @@ class EffectKnobs extends StatelessWidget {
                           builder: (_, value, __) => Tooltip(
                             // message: 'Echo Wet',
                             tooltip: (context) => Card(child: Text('Echo Wet')),
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('echoWet', value),
                               min: 0.0,
@@ -106,7 +107,7 @@ class EffectKnobs extends StatelessWidget {
                           builder: (_, value, __) => Tooltip(
                             // message: 'Echo Delay',
                             tooltip: (context) => Card(child: Text('Echo Delay')),
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('echoDelay', value),
                               min: 0.0,
@@ -125,7 +126,7 @@ class EffectKnobs extends StatelessWidget {
                           builder: (_, value, __) => Tooltip(
                             // message: 'Echo Decay',
                             tooltip: (context) => Card(child: Text('Echo Decay')),
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('echoDecay', value),
                               min: 0.0,
@@ -161,7 +162,7 @@ class EffectKnobs extends StatelessWidget {
                         builder: (_, value, __) => Tooltip(
                           // message: 'Freeverb Wet',
                           tooltip: (context) => Card(child: Text('Freeverb Wet')),
-                          child: DialKnob(
+                          child: DialKnobCustom(
                             value: value,
                             onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('freeverbWet', value),
                             min: 0.0,
@@ -180,7 +181,7 @@ class EffectKnobs extends StatelessWidget {
                         builder: (_, value, __) => Tooltip(
                           // message: 'Freeverb Room Size',
                           tooltip: (context) => Card(child: Text('Freeverb Room Size')),
-                          child: DialKnob(
+                          child: DialKnobCustom(
                             value: value,
                             onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('freeverbRoomSize', value),
                             min: 0.0,
@@ -199,7 +200,7 @@ class EffectKnobs extends StatelessWidget {
                         builder: (_, value, __) => Tooltip(
                           // message: 'Freeverb Damping',
                           tooltip: (context) => Card(child: Text('Freeverb Damping')),
-                          child: DialKnob(
+                          child: DialKnobCustom(
                             value: value,
                             onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('freeverbDamping', value),
                             min: 0.0,
@@ -218,7 +219,7 @@ class EffectKnobs extends StatelessWidget {
                         builder: (_, value, __) => Tooltip(
                           // message: 'Freeverb Width',
                           tooltip: (context) => Card(child: Text('Freeverb Width')),
-                          child: DialKnob(
+                          child: DialKnobCustom(
                             value: value,
                             onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('freeverbWidth', value),
                             min: 0.0,
@@ -258,7 +259,7 @@ class EffectKnobs extends StatelessWidget {
                             // message: 'Pitch Shift',
                             tooltip: (context) => Card(child: Text('Pitch Shift')),
 
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('pitchShift', value),
                               min: 0.0,
@@ -299,7 +300,7 @@ class EffectKnobs extends StatelessWidget {
                             // message: 'Flanger Wet',
                             tooltip: (context) => Card(child: Text('Flanger Wet')),
 
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('flangerWet', value),
                               min: 0.0,
@@ -319,7 +320,7 @@ class EffectKnobs extends StatelessWidget {
                             // message: 'Flanger Frequency',
                             tooltip: (context) => Card(child: Text('Flanger Frequency')),
 
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('flangerFreq', value),
                               min: -48.0,
@@ -339,7 +340,7 @@ class EffectKnobs extends StatelessWidget {
                             // message: 'Flanger Delay',
                             tooltip: (context) => Card(child: Text('Flanger Delay')),
 
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('flangerDelay', value),
                               min: 0.0001,
@@ -401,7 +402,7 @@ class EffectKnobs extends StatelessWidget {
                             // message: 'Bassboost Boost',
                             tooltip: (context) => Card(child: Text('Bassboost Boost')),
 
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('bassboostBoost', value),
                               min: 0.0,
@@ -442,7 +443,7 @@ class EffectKnobs extends StatelessWidget {
                             // message: 'Lo-Fi Sample Rate',
                             tooltip: (context) => Card(child: Text('Lo-Fi Sample Rate')),
 
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('lofiSampleRate', value),
                               min: 100.0,
@@ -460,7 +461,7 @@ class EffectKnobs extends StatelessWidget {
                           selector: (_, provider) => provider.filterParams['lofiBitDepth']!,
                           builder: (_, value, __) => Tooltip(
                             tooltip: (context) => Card(child: Text('Lo-Fi Bit Depth')),
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('lofiBitDepth', value),
                               min: 4.0,
@@ -479,7 +480,7 @@ class EffectKnobs extends StatelessWidget {
                           builder: (_, value, __) => Tooltip(
                             // message: 'Lo-Fi Wet',
                             tooltip: (context) => Card(child: Text('Lo-Fi Wet')),
-                            child: DialKnob(
+                            child: DialKnobCustom(
                               value: value,
                               onChanged: (value) => Provider.of<MediaProvider>(context, listen: false).setFilterParam('lofiWet', value),
                               min: 0.0,
