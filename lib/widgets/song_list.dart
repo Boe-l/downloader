@@ -16,18 +16,20 @@ class _SongListState extends State<SongList> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        SizedBox(height: 50),
         Row(
           children: [
             Spacer(),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Button(
-                style: ButtonVariance.menubar,
-                onPressed: () async {
-                  await context.read<MediaProvider>().loadMediaFromFolder();
-                  // Removido setState, pois notifyListeners() já atualiza a UI
-                },
-                child: const Icon(HugeIcons.strokeRoundedFolderAdd),
+              child: ExcludeFocus(
+                child: Button(
+                  style: ButtonVariance.menubar,
+                  onPressed: () async {
+                    await context.read<MediaProvider>().loadMediaFromFolder();
+                  },
+                  child: const Icon(HugeIcons.strokeRoundedFolderAdd),
+                ),
               ),
             ),
           ],

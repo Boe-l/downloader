@@ -126,7 +126,7 @@ class _MainWidgetState extends State<MainWidget> {
                       widget.shell, // Background content
                       Align(
                         alignment: Alignment.bottomLeft,
-                        child: Padding(padding: const EdgeInsets.only(left: 20, bottom: 10, right: 20), child: TecladoOuvidor(child: AnimatedMediaCard())),
+                        child: Padding(padding: const EdgeInsets.only(left: 20, bottom: 10, right: 20), child: AnimatedMediaCard()),
                       ),
                       Align(
                         alignment: Alignment.topCenter,

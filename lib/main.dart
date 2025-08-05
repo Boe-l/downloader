@@ -5,6 +5,7 @@ import 'package:boel_downloader/go_router/router.dart';
 import 'package:boel_downloader/services/media_provider.dart';
 // import 'package:boel_downloader/pages/player_page.dart';
 import 'package:boel_downloader/services/download_service.dart';
+import 'package:boel_downloader/services/shortcuts.dart';
 import 'package:ffmpeg_helper/ffmpeg_helper.dart';
 import 'package:flutter/foundation.dart';
 // import 'package:media_kit/media_kit.dart';
@@ -26,12 +27,14 @@ void main() async {
         ChangeNotifierProvider(create: (_) => DownloadService()),
         ChangeNotifierProvider(create: (_) => MediaProvider()),
       ],
-      child: ShadcnApp.router(
-        title: 'Baixador do BoelLabs',
-        // home: MainWidget(),
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(colorScheme: ColorSchemes.darkZinc(), radius: 0.5),
-        routerConfig: AppRouter().router,
+      child: TecladoOuvidor(
+        child: ShadcnApp.router(
+          title: 'Baixador do BoelLabs',
+          // home: MainWidget(),
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(colorScheme: ColorSchemes.darkZinc(), radius: 0.5),
+          routerConfig: AppRouter().router,
+        ),
       ),
     ),
   );

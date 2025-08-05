@@ -23,25 +23,26 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 40),
-              child: SizedBox(
-                height: 55,
-                width: 500,
+          // Center(
+          //   child: Padding(
+          //     padding: const EdgeInsets.only(top: 40),
+          //     child: SizedBox(
+          //       height: 55,
+          //       width: 500,
 
-                child: TextField(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(32)),
+          //       child: TextField(
+          //         autofocus: false,
+          //         decoration: BoxDecoration(
+          //           borderRadius: BorderRadius.all(Radius.circular(32)),
 
-                    border: Border.all(width: 1, color: Colors.white),
-                  ),
-                  placeholder: Text('Busque uma Música').h4,
-                  features: [InputFeature.trailing(Button(style: ButtonVariance.ghost, onPressed: () {}, child: Icon(HugeIcons.strokeRoundedSearch01, size: 22)))],
-                ),
-              ),
-            ),
-          ),
+          //           border: Border.all(width: 1, color: Colors.white),
+          //         ),
+          //         placeholder: Text('Busque uma Música').h4,
+          //         features: [],
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Expanded(child: SongList()),
         ],
       ),
