@@ -37,7 +37,13 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
                     border: Border.all(width: 1, color: Colors.white),
                   ),
                   placeholder: Text('Busque uma Música').h4,
-                  features: [InputFeature.trailing(Button(style: ButtonVariance.ghost, onPressed: () {}, child: Icon(HugeIcons.strokeRoundedSearch01, size: 22)))],
+                  features: [
+                    InputFeature.trailing(
+                      ExcludeFocus(
+                        child: Button(style: ButtonVariance.ghost, onPressed: () {}, child: Icon(HugeIcons.strokeRoundedSearch01, size: 22)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -21,13 +21,15 @@ class _SongListState extends State<SongList> {
             Spacer(),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Button(
-                style: ButtonVariance.menubar,
-                onPressed: () async {
-                  await context.read<MediaProvider>().loadMediaFromFolder();
-                  // Removido setState, pois notifyListeners() já atualiza a UI
-                },
-                child: const Icon(HugeIcons.strokeRoundedFolderAdd),
+              child: ExcludeFocus(
+                child: Button(
+                  style: ButtonVariance.menubar,
+                  onPressed: () async {
+                    await context.read<MediaProvider>().loadMediaFromFolder();
+                    // Removido setState, pois notifyListeners() já atualiza a UI
+                  },
+                  child: const Icon(HugeIcons.strokeRoundedFolderAdd),
+                ),
               ),
             ),
           ],
