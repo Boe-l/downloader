@@ -1,5 +1,6 @@
-import 'package:boel_downloader/widgets/song_item.dart';
 import 'package:boel_downloader/services/media_provider.dart';
+import 'package:boel_downloader/widgets/card_animation_hover.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
@@ -13,46 +14,63 @@ class SongList extends StatefulWidget {
 class _SongListState extends State<SongList> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      constraints: BoxConstraints(maxWidth: 300),
-      child: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+    return Column(
+      children: [
+        Row(
+          children: [
+            Spacer(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Button(
                 style: ButtonVariance.menubar,
                 onPressed: () async {
                   await context.read<MediaProvider>().loadMediaFromFolder();
-                  setState(() {});
+                  // Removido setState, pois notifyListeners() já atualiza a UI
                 },
-                child: const Text('Abrir Pasta'),
+                child: const Icon(HugeIcons.strokeRoundedFolderAdd),
               ),
             ),
-          ),
-          SliverFillRemaining(
-            child: Selector<MediaProvider, int>(
-              selector: (_, provider) => provider.currentIndex,
-              builder: (context, currentIndex, child) {
+          ],
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Selector<MediaProvider, (int, int)>(
+              selector: (_, provider) => (provider.currentIndex, provider.mediaFiles.length),
+              builder: (context, data, child) {
                 final provider = context.read<MediaProvider>();
-                return ListView.builder(
-                  // Como estamos dentro de um Sliver, usamos ListView.builder com physics ajustado
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: provider.mediaFiles.length,
-                  itemBuilder: (context, index) {
-                    return SongItem(
-                      key: ValueKey(provider.mediaFiles[index].file.path),
-                      media: provider.mediaFiles[index],
-                      isSelected: index == currentIndex,
-                      onSelect: () => provider.setCurrentMedia(provider.mediaFiles[index]),
-                    );
-                  },
+                final List<Map<String, dynamic>> cards = [
+                  for (var entry in provider.mediaFiles.asMap().entries) {'image': entry.value.image, 'header': entry.value.title, 'content': entry.value.artist, 'index': entry.key},
+                ];
+
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40.0),
+                    child: Wrap(
+                      direction: Axis.horizontal,
+                      spacing: 20.0,
+                      runSpacing: 22.0,
+                      children: cards
+                          .map(
+                            (card) => CardAnimationHover(
+                              card: card,
+                              showAnimation: true,
+                              height: 150,
+                              width: 150,
+                              highlight: card['index'] == provider.currentIndex, // Set highlight based on index
+                              onTap: () {
+                                provider.setCurrentMedia(provider.mediaFiles[card['index']]);
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
                 );
               },
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

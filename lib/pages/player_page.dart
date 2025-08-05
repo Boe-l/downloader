@@ -1,4 +1,5 @@
 import 'package:boel_downloader/widgets/song_list.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class AudioPlayerPage extends StatefulWidget {
@@ -16,11 +17,32 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingHeader: true,
+      headers: [],
       footers: [],
-      child: Row(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SongList(),
-          const Expanded(child: Column(children: [])),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 40),
+              child: SizedBox(
+                height: 55,
+                width: 500,
+
+                child: TextField(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.all(Radius.circular(32)),
+
+                    border: Border.all(width: 1, color: Colors.white),
+                  ),
+                  placeholder: Text('Busque uma Música').h4,
+                  features: [InputFeature.trailing(Button(style: ButtonVariance.ghost, onPressed: () {}, child: Icon(HugeIcons.strokeRoundedSearch01, size: 22)))],
+                ),
+              ),
+            ),
+          ),
+          Expanded(child: SongList()),
         ],
       ),
     );

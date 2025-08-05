@@ -41,8 +41,7 @@ class MediaProvider with ChangeNotifier {
   Duration get duration => _duration;
   Map<String, bool> get filterStates => _audioEffects.filterStates;
   Map<String, double> get filterParams => _audioEffects.filterParams;
-
-  // Mock player for compatibility
+  StreamSubscription<FileSystemEvent>? _folderWatcher;
   final _player = MockPlayer();
   MockPlayer get player => _player;
 
@@ -61,10 +60,7 @@ class MediaProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final savedPath = prefs.getString('save_path');
     if (savedPath != null) {
-      Directory dir = Directory(savedPath);
-      if (dir.existsSync()) {
-        _songList = dir.listSync().where((file) => file is File && _isMediaFile(file.path)).map((file) => Media(File(file.path), title: path.basenameWithoutExtension(file.path))).toList();
-      }
+      loadMediaFromFolder(folderPath: savedPath);
     }
     _updateShuffledIndices();
     await _audioEffects.loadPrefs();
@@ -75,10 +71,16 @@ class MediaProvider with ChangeNotifier {
     await _audioEffects.savePrefs();
   }
 
-  Future<void> loadMediaFromFolder() async {
-    String? folderPath = await FilePicker.platform.getDirectoryPath();
-    if (folderPath != null) {
-      Directory dir = Directory(folderPath);
+  Future<void> loadMediaFromFolder({String? folderPath}) async {
+    // Cancela o watcher anterior, se existir
+    await _folderWatcher?.cancel();
+
+    final selectedPath = folderPath ?? await FilePicker.platform.getDirectoryPath();
+    if (selectedPath != null) {
+      Directory dir = Directory(selectedPath);
+      if (!dir.existsSync()) return;
+
+      // Carrega os arquivos de mídia iniciais
       List<Future<Media>> mediaFutures = dir.listSync().where((file) => file is File && _isMediaFile(file.path)).map((file) async {
         final metadata = readMetadata(file as File, getImage: true);
         String title = metadata.title ?? path.basenameWithoutExtension(file.path);
@@ -92,15 +94,51 @@ class MediaProvider with ChangeNotifier {
       _currentIndex = 0;
       _updateShuffledIndices();
 
+      // Salva o caminho no SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('save_path', folderPath);
+      await prefs.setString('save_path', selectedPath);
+
+      // Inicia o monitoramento da pasta
+      _startFolderWatcher(selectedPath);
+
       notifyListeners();
     }
   }
 
   bool _isMediaFile(String filePath) {
-    final supportedExtensions = ['.mp3', '.wav', '.ogg', '.m4a'];
+    final supportedExtensions = ['.mp3', '.wav', '.ogg'];
     return supportedExtensions.any((ext) => filePath.toLowerCase().endsWith(ext));
+  }
+
+  void _startFolderWatcher(String folderPath) {
+    Directory dir = Directory(folderPath);
+    if (!dir.existsSync()) return;
+
+    _folderWatcher = dir.watch(events: FileSystemEvent.all).listen((event) async {
+      if (event is FileSystemCreateEvent || event is FileSystemModifyEvent || event is FileSystemDeleteEvent) {
+        if (_isMediaFile(event.path)) {
+          // Recarrega a lista de arquivos de mídia
+          List<Future<Media>> mediaFutures = dir.listSync().where((file) => file is File && _isMediaFile(file.path)).map((file) async {
+            final metadata = readMetadata(file as File, getImage: true);
+            String title = metadata.title ?? path.basenameWithoutExtension(file.path);
+            String author = metadata.artist ?? 'Artista desconhecido.';
+            Uint8List? imageBytes = metadata.pictures.isNotEmpty ? metadata.pictures[0].bytes : null;
+
+            return Media(File(file.path), title: title, image: imageBytes, artist: author);
+          }).toList();
+
+          _songList = await Future.wait<Media>(mediaFutures);
+          _updateShuffledIndices();
+
+          // Ajusta o índice atual, se necessário
+          if (_currentIndex >= _songList.length) {
+            _currentIndex = _songList.isNotEmpty ? _songList.length - 1 : 0;
+          }
+
+          notifyListeners();
+        }
+      }
+    });
   }
 
   Future<void> setCurrentMedia(Media media) async {
@@ -133,17 +171,36 @@ class MediaProvider with ChangeNotifier {
   }
 
   Future<void> play(Media media) async {
+    final log = Logger('MediaPlayer');
     try {
+      // Step 1: Stop any currently playing media
       if (_currentHandle != null) {
         await _soloud!.stop(_currentHandle!);
         _currentHandle = null;
         _currentSource = null;
         _positionTimer?.cancel();
       }
-      media.source ??= await _soloud!.loadFile(media.file.path);
+
+      // Step 2: Validate and read the file into Uint8List
+      final file = File(media.file.path);
+      if (!await file.exists()) {
+        log.severe("File does not exist: ${media.file.path}");
+
+        return;
+      }
+
+      final Uint8List fileBytes = await file.readAsBytes();
+      //usar loadMem em vez de loadFile para circunventar erros com filename
+      media.source ??= await _soloud!.loadMem(
+        media.file.path, //referencia
+        fileBytes,
+        mode: LoadMode.memory,
+      );
       _currentSource = media.source;
       _duration = _soloud!.getLength(_currentSource!);
       _currentHandle = await _soloud!.play(_currentSource!, volume: _player.state.volume);
+
+      // Step 4: Set up position timer
       _positionTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
         if (_isPlaying && _currentHandle != null) {
           _position = _soloud!.getPosition(_currentHandle!);
@@ -153,12 +210,13 @@ class MediaProvider with ChangeNotifier {
           notifyListeners();
         }
       });
+
       _audioEffects.applyActiveFilters();
       _position = Duration.zero;
       _isPlaying = true;
       notifyListeners();
-    } catch (e) {
-      _log.severe("Error playing media '${media.file.path}': $e");
+    } catch (e, stackTrace) {
+      log.severe("Error playing media '${media.file.path}': $e\nStackTrace: $stackTrace");
     }
   }
 
@@ -300,6 +358,7 @@ class MediaProvider with ChangeNotifier {
   Future<void> dispose() async {
     _savePrefsTimer?.cancel();
     _positionTimer?.cancel();
+    await _folderWatcher?.cancel();
     if (_currentHandle != null) {
       await _soloud!.stop(_currentHandle!);
     }

@@ -47,7 +47,7 @@ dependencies:
   url_launcher: ^6.3.2
   # media_kit: ^1.1.11 # Primary package.
   # media_kit_libs_audio: ^1.0.5 # Native audio dependencies. 
-  flutter_soloud: ^2.0.0
+  flutter_soloud: ^3.0.0
   logging: ^1.3.0
   flutter_dial_knob: ^0.1.0
   audio_metadata_reader: ^1.4.2
