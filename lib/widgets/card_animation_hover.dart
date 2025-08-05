@@ -84,8 +84,8 @@ class _CardAnimationHoverState extends State<CardAnimationHover> with SingleTick
       final dy = (y - cardSize.height / 2) / (cardSize.height / 2);
 
       setState(() {
-        _angleY = dx * 15;
-        _angleX = dy * -15;
+        _angleY = dx * -15;
+        _angleX = dy * 15;
         _isHovered = true;
       });
     }
