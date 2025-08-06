@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
-import 'card-widget.dart'; // Assuming this is your CardWidget file
+import 'card_widget.dart'; // Assuming this is your CardWidget file
 
 class CardAnimationHover extends StatefulWidget {
   final Map<String, dynamic> card;

@@ -173,7 +173,6 @@ class MediaProvider with ChangeNotifier {
   Future<void> play(Media media) async {
     final log = Logger('MediaPlayer');
     try {
-      // Step 1: Stop any currently playing media
       if (_currentHandle != null) {
         await _soloud!.stop(_currentHandle!);
         _currentHandle = null;
@@ -181,7 +180,6 @@ class MediaProvider with ChangeNotifier {
         _positionTimer?.cancel();
       }
 
-      // Step 2: Validate and read the file into Uint8List
       final file = File(media.file.path);
       if (!await file.exists()) {
         log.severe("File does not exist: ${media.file.path}");
@@ -200,7 +198,6 @@ class MediaProvider with ChangeNotifier {
       _duration = _soloud!.getLength(_currentSource!);
       _currentHandle = await _soloud!.play(_currentSource!, volume: _player.state.volume);
 
-      // Step 4: Set up position timer
       _positionTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
         if (_isPlaying && _currentHandle != null) {
           _position = _soloud!.getPosition(_currentHandle!);

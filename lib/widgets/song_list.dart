@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:boel_downloader/services/media_provider.dart';
 import 'package:boel_downloader/widgets/card_animation_hover.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -16,10 +18,9 @@ class _SongListState extends State<SongList> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SizedBox(height: 50),
+        // SizedBox(height: 50),
         Row(
           children: [
-            Spacer(),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: ExcludeFocus(
@@ -32,43 +33,59 @@ class _SongListState extends State<SongList> {
                 ),
               ),
             ),
+            Spacer(),
           ],
         ),
         Expanded(
-          child: SingleChildScrollView(
-            child: Selector<MediaProvider, (int, int)>(
-              selector: (_, provider) => (provider.currentIndex, provider.mediaFiles.length),
-              builder: (context, data, child) {
-                final provider = context.read<MediaProvider>();
-                final List<Map<String, dynamic>> cards = [
-                  for (var entry in provider.mediaFiles.asMap().entries) {'image': entry.value.image, 'header': entry.value.title, 'content': entry.value.artist, 'index': entry.key},
-                ];
+          child: ScrollConfiguration(
+            behavior: ScrollBehavior().copyWith(scrollbars: false, overscroll: true, dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch}),
 
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(40.0),
-                    child: Wrap(
-                      direction: Axis.horizontal,
-                      spacing: 20.0,
-                      runSpacing: 22.0,
-                      children: cards
-                          .map(
-                            (card) => CardAnimationHover(
-                              card: card,
-                              showAnimation: true,
-                              height: 150,
-                              width: 150,
-                              highlight: card['index'] == provider.currentIndex, // Set highlight based on index
-                              onTap: () {
-                                provider.setCurrentMedia(provider.mediaFiles[card['index']]);
-                              },
-                            ),
-                          )
-                          .toList(),
+            child: SingleChildScrollView(
+              child: Selector<MediaProvider, (int, int)>(
+                selector: (_, provider) => (provider.currentIndex, provider.mediaFiles.length),
+                builder: (context, data, child) {
+                  final provider = context.read<MediaProvider>();
+                  final List<Map<String, dynamic>> cards = [
+                    for (var entry in provider.mediaFiles.asMap().entries) {'image': entry.value.image, 'header': entry.value.title, 'content': entry.value.artist, 'index': entry.key},
+                  ];
+
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(40.0),
+                      child: Wrap(
+                        direction: Axis.horizontal,
+                        spacing: 30.0,
+                        runSpacing: 33.0,
+                        children: cards
+                            .map(
+                              (card) => ContextMenu(
+                                direction: Axis.vertical,
+                                items: [
+                                  // MenuLabel(leading: Text('Opções'))
+                                  // ,
+                                  MenuButton(leading: Icon(HugeIcons.strokeRoundedPlay), child: Text('Tocar Música')),
+                                  MenuButton(leading: Icon(HugeIcons.strokeRoundedText), child: Text('Buscar Letra')),
+                                  MenuButton(leading: Icon(HugeIcons.strokeRoundedFavourite), child: Text('Favoritar')),
+                                  MenuButton(leading: Icon(HugeIcons.strokeRoundedFolder01), child: Text('Abrir Local')),
+                                ],
+                                child: CardAnimationHover(
+                                  card: card,
+                                  showAnimation: true,
+                                  height: 150,
+                                  width: 150,
+                                  highlight: card['index'] == provider.currentIndex, // Set highlight based on index
+                                  onTap: () {
+                                    provider.setCurrentMedia(provider.mediaFiles[card['index']]);
+                                  },
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
         ),

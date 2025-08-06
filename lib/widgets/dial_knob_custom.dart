@@ -105,7 +105,6 @@ class DialKnobCustomState extends State<DialKnobCustom> {
     } else {
       newValue = _currentValue - porcent;
     }
-	debugPrint(_currentValue.toString());
     setState(() {
       _currentValue = newValue <= widget.min ? widget.min : newValue.clamp(widget.min, widget.max);
     });

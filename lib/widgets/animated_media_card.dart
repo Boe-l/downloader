@@ -1,6 +1,7 @@
 import 'package:boel_downloader/pages/equalizer.dart';
 import 'package:boel_downloader/services/media_provider.dart';
 import 'package:boel_downloader/widgets/effect_knobs.dart';
+import 'package:flutter/gestures.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -179,17 +180,29 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
                                 padding: const EdgeInsets.only(right: 8.0),
                                 child: Consumer<MediaProvider>(
                                   builder: (context, provider, child) {
-                                    return SizedBox(
-                                      width: 100,
-                                      child: Slider(
-                                        value: SliderValue.single(provider.currentMedia != null ? provider.player.state.volume : 1.0),
-                                        max: 1.0,
-                                        onChanged: provider.currentMedia != null
-                                            ? (value) {
-                                                provider.setVolume(value.value);
-                                                provider.player.state.volume = value.value;
-                                              }
-                                            : null,
+                                    return Listener(
+                                      onPointerSignal: (event) {
+                                        if (event is PointerScrollEvent) {
+                                          final dy = event.scrollDelta.dy;
+                                          if (dy < 0) {
+                                            provider.setVolume(provider.player.state.volume + 0.1);
+                                          } else {
+                                            provider.setVolume(provider.player.state.volume - 0.1);
+                                          }
+                                        }
+                                      },
+                                      child: SizedBox(
+                                        width: 100,
+                                        child: Slider(
+                                          value: SliderValue.single(provider.currentMedia != null ? provider.player.state.volume : 1.0),
+                                          max: 1.0,
+                                          onChanged: provider.currentMedia != null
+                                              ? (value) {
+                                                  provider.setVolume(value.value);
+                                                  provider.player.state.volume = value.value;
+                                                }
+                                              : null,
+                                        ),
                                       ),
                                     );
                                   },

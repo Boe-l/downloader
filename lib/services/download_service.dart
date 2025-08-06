@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:boel_downloader/models/enums.dart';
+import 'package:boel_downloader/models/metadata_ffmpeg.dart';
 import 'package:boel_downloader/services/shared_prefs.dart';
 import 'package:boel_downloader/widgets/toast.dart';
 import 'package:ffmpeg_helper/ffmpeg_helper.dart';
@@ -9,7 +10,6 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:youtube_explode_dart/youtube_explode_dart.dart';
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 
 class DownloadItem {
   final String id;
@@ -116,17 +116,31 @@ class DownloadService with ChangeNotifier {
 
       if (type == MediaFormat.mp3) {
         // Converter o arquivo de áudio para MP3 verdadeiro
-        final cliCommand = FFMpegCommand(
-          inputs: [FFMpegInput.asset(tempAudioPath)],
-          args: [const CopyVideoCodecArgument(), const AudioBitrateArgument(192000), const OverwriteArgument()],
-
-          outputFilepath: outputPath,
-        );
         final thumbnailResponse = await http.get(Uri.parse(video.thumbnails.mediumResUrl));
         if (thumbnailResponse.statusCode != 200) {
           throw Exception('Failed to download thumbnail');
         }
         final thumbnailBytes = thumbnailResponse.bodyBytes;
+        final metadataArg = AddMetadataAndCoverArgument(
+          metadata: {
+            'title': video.title,
+            'artist': video.author,
+            'album': '', // Empty string is fine, but avoid empty keys
+            'year': '',
+            'genre': 'Music', // Added a default genre to avoid empty metadata
+          },
+          coverImageBytes: thumbnailBytes,
+          imageFormat: 'jpg',
+          useId3v2Version3: true,
+          writeId3v1: true,
+        );
+        final cliCommand = FFMpegCommand(
+          inputs: [FFMpegInput.asset(tempAudioPath), ...metadataArg.additionalInputs],
+          args: [const CopyVideoCodecArgument(), const AudioBitrateArgument(192000), metadataArg, const OverwriteArgument()],
+
+          outputFilepath: outputPath,
+        );
+
         await _ffmpeg.runAsync(
           cliCommand,
           statisticsCallback: (Statistics statistics) {},
@@ -134,17 +148,17 @@ class DownloadService with ChangeNotifier {
             if (outputFile == null) {
               throw Exception('Falha ao converter áudio para MP3');
             }
-            // Limpar arquivo temporário
-            updateMetadata(outputFile, (metadata) {
-              metadata.setTitle(video.title);
-              metadata.setArtist(video.author);
-              // metadata.setAlbum(video.);
-              metadata.setTrackNumber(1);
-              // metadata.setYear(DateTime(2014));
-              // metadata.setLyrics("I'm singing");
-              metadata.setGenres(["Baixador do Boel"]);
-              metadata.setPictures([Picture(thumbnailBytes, "image/jpeg", PictureType.coverFront)]);
-            });
+            // // Limpar arquivo temporário
+            // updateMetadata(outputFile, (metadata) {
+            //   metadata.setTitle(video.title);
+            //   metadata.setArtist(video.author);
+            //   // metadata.setAlbum(video.);
+            //   metadata.setTrackNumber(1);
+            //   // metadata.setYear(DateTime(2014));
+            //   // metadata.setLyrics("I'm singing");
+            //   metadata.setGenres(["Baixador do Boel"]);
+            //   metadata.setPictures([Picture(thumbnailBytes, "image/jpeg", PictureType.coverFront)]);
+            // });
 
             await File(tempAudioPath).delete();
             if (context.mounted) {

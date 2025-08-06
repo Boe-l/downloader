@@ -1,6 +1,13 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:boel_downloader/models/enums.dart';
+import 'package:boel_downloader/models/media.dart';
+import 'package:boel_downloader/services/media_provider.dart';
 import 'package:boel_downloader/tools/url_lancher.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:boel_downloader/services/download_service.dart';
@@ -45,7 +52,24 @@ class DownloadsPage extends StatelessWidget {
                                     // padding: EdgeInsets.all(0),
                                     style: ButtonVariance.outline,
                                     onPressed: () {
-                                      UrlLancher.go(download.filePath!);
+                                      if (download.status == DownloadStatus.completed && download.format == MediaFormat.mp3) {
+                                        try {
+                                          final metadata = readMetadata(File(download.filePath!), getImage: true);
+                                          String title = metadata.title ?? path.basenameWithoutExtension(download.filePath!);
+                                          String author = metadata.artist ?? 'Artista desconhecido.';
+                                          Uint8List? imageBytes = metadata.pictures.isNotEmpty ? metadata.pictures[0].bytes : null;
+                                          final song = Media(File(download.filePath!), title: title, image: imageBytes, artist: author);
+                                          for (var media in Provider.of<MediaProvider>(context, listen: false).mediaFiles) {
+                                            if (media.title == song.title) {
+                                              Provider.of<MediaProvider>(context, listen: false).play(media);
+                                              return;
+                                            }
+                                          }
+                                          Provider.of<MediaProvider>(context, listen: false).setCurrentMedia(song);
+                                        } on MetadataParserException catch (e) {
+                                          print('Error parsing metadata: ${e.message}');
+                                        }
+                                      }
                                     },
                                     child: Stack(
                                       children: [
