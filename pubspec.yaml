@@ -41,7 +41,9 @@ dependencies:
   go_router: ^16.0.0
   path_provider: ^2.1.5
   provider: ^6.1.5
-  ffmpeg_helper: ^1.0.1
+  ffmpeg_helper: 
+    git:
+      url: https://github.com/Boe-l/ffmpeg_helper
   file_picker: ^10.2.1
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.2
@@ -53,6 +55,9 @@ dependencies:
   http: ^1.4.0
   path: ^1.9.1
   rxdart: ^0.28.0
+  package_info_plus: ^4.2.0
+  archive: ^3.6.1
+  dio: ^5.8.0+1
 
 dev_dependencies:
   flutter_test:

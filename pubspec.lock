@@ -2,7 +2,7 @@
 # See https://dart.dev/tools/pub/glossary#lockfile
 packages:
   archive:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: archive
       sha256: cb6a278ef2dbb298455e1a713bda08524a175630ec643a242c399c932a0a1f7d
@@ -170,7 +170,7 @@ packages:
     source: hosted
     version: "0.0.2"
   dio:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: dio
       sha256: "253a18bbd4851fecba42f7343a1df3a9a4c1d31a2c1b37e221086b4fa8c8dbc9"
@@ -220,10 +220,11 @@ packages:
   ffmpeg_helper:
     dependency: "direct main"
     description:
-      name: ffmpeg_helper
-      sha256: "9652adb5aa14ef014a677a85a55ceef2fdbe07c3cffe04ebab0b73f979eca952"
-      url: "https://pub.dev"
-    source: hosted
+      path: "."
+      ref: HEAD
+      resolved-ref: ead0b312150ec9ee7a0cb4730c217065f6109688
+      url: "https://github.com/Boe-l/ffmpeg_helper"
+    source: git
     version: "1.0.1"
   ffmpeg_kit_flutter_min_gpl:
     dependency: transitive
@@ -473,7 +474,7 @@ packages:
     source: hosted
     version: "1.0.0"
   package_info_plus:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: package_info_plus
       sha256: "7e76fad405b3e4016cd39d08f455a4eb5199723cf594cd1b8916d47140d93017"
