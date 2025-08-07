@@ -1,5 +1,6 @@
 import 'package:boel_downloader/pages/equalizer.dart';
 import 'package:boel_downloader/services/media_provider.dart';
+import 'package:boel_downloader/tools/Throttler.dart';
 import 'package:boel_downloader/widgets/effect_knobs.dart';
 import 'package:flutter/gestures.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -102,18 +103,19 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Button(style: ButtonVariance.ghost, onPressed: provider.previousMedia, child: Icon(HugeIcons.strokeRoundedPrevious, size: 20)),
+                                  Button(style: ButtonVariance.ghost, onPressed: () => Throttler(milliseconds: 1000).run(() => provider.previousMedia()), child: Icon(HugeIcons.strokeRoundedPrevious, size: 20)),
                                   SizedBox(width: 6),
                                   Button(
                                     style: ButtonVariance.primary.withBorderRadius(borderRadius: BorderRadius.all(Radius.circular(20))),
                                     disableHoverEffect: true,
 
-                                    onPressed: provider.togglePlayPause,
+                                    onPressed: () => Throttler(milliseconds: 1000).run(() => 
+                                    provider.togglePlayPause()),
                                     child: Icon(size: 20, provider.currentMedia != null && provider.isPlaying ? HugeIcons.strokeRoundedPause : HugeIcons.strokeRoundedPlay),
                                   ),
                                   SizedBox(width: 6),
 
-                                  Button(style: ButtonVariance.ghost, onPressed: provider.nextMedia, child: Icon(HugeIcons.strokeRoundedNext, size: 20)),
+                                  Button(style: ButtonVariance.ghost, onPressed: () => Throttler(milliseconds: 1000).run(() => provider.nextMedia()), child: Icon(HugeIcons.strokeRoundedNext, size: 20)),
                                 ],
                               ),
                               Row(

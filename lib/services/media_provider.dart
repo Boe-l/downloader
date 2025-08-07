@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:boel_downloader/models/player.dart';
 import 'package:boel_downloader/services/windows_media.dart';
+import 'package:boel_downloader/tools/Throttler.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
@@ -49,24 +50,27 @@ class MediaProvider with ChangeNotifier {
 
   MediaProvider() {
     _initialize();
-    _mediaControl = MediaPlayer.mediaButtonStream.listen((event) {
-      switch (event) {
-        case 'play':
-          togglePlayPause();
-          break;
-        case 'pause':
-          togglePlayPause();
-          break;
-        case 'next':
-          nextMedia();
-          break;
-        case 'previous':
-          previousMedia();
-          break;
-      }
-    }, onError: (error) {
-      print('Stream error: $error');
-    });
+    _mediaControl = MediaPlayer.mediaButtonStream.listen(
+      (event) {
+        switch (event) {
+          case 'play':
+            Throttler(milliseconds: 300).run(() => togglePlayPause());
+            break;
+          case 'pause':
+            Throttler(milliseconds: 300).run(() => togglePlayPause());
+            break;
+          case 'next':
+            Throttler(milliseconds: 300).run(() => nextMedia());
+            break;
+          case 'previous':
+            Throttler(milliseconds: 300).run(() => previousMedia());
+            break;
+        }
+      },
+      onError: (error) {
+        print('Stream error: $error');
+      },
+    );
   }
 
   Future<void> _initialize() async {
@@ -74,13 +78,14 @@ class MediaProvider with ChangeNotifier {
     if (!_soloud!.isInitialized) await _soloud!.init();
     await _loadPrefs();
     _audioEffects.setSoLoud(_soloud!);
+    _soloud!.setMaxActiveVoiceCount(1);
   }
 
   Future<void> _loadPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final savedPath = prefs.getString('save_path');
     if (savedPath != null) {
-      loadMediaFromFolder(folderPath: savedPath);
+      loadMediaFromFolder(folderPath: savedPath, isInit: true);
     }
     _updateShuffledIndices();
     await _audioEffects.loadPrefs();
@@ -91,7 +96,7 @@ class MediaProvider with ChangeNotifier {
     await _audioEffects.savePrefs();
   }
 
-  Future<void> loadMediaFromFolder({String? folderPath}) async {
+  Future<void> loadMediaFromFolder({String? folderPath, bool isInit = false}) async {
     await _folderWatcher?.cancel();
 
     final selectedPath = folderPath ?? await FilePicker.platform.getDirectoryPath();
@@ -116,7 +121,7 @@ class MediaProvider with ChangeNotifier {
       await prefs.setString('save_path', selectedPath);
 
       _startFolderWatcher(selectedPath);
-
+      if (isInit) play(_songList[0], isPaused: true);
       notifyListeners();
     }
   }
@@ -155,7 +160,7 @@ class MediaProvider with ChangeNotifier {
     });
   }
 
-  Future<void> setCurrentMedia(Media media) async {
+  Future<void> setCurrentMedia(Media media, {bool isPaused = false}) async {
     try {
       if (_currentHandle != null) {
         await _soloud!.stop(_currentHandle!);
@@ -171,7 +176,7 @@ class MediaProvider with ChangeNotifier {
         _currentIndex = _songList.length - 1;
         _updateShuffledIndices();
       }
-      await play(media);
+      await play(media, isPaused: isPaused);
       notifyListeners();
     } catch (e) {
       _log.severe("Error setting media '${media.file.path}': $e");
@@ -184,11 +189,12 @@ class MediaProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> play(Media media) async {
+  Future<void> play(Media media, {bool isPaused = false}) async {
     final log = Logger('MediaPlayer');
     try {
       if (_currentHandle != null) {
         await _soloud!.stop(_currentHandle!);
+        
         _currentHandle = null;
         _currentSource = null;
         _positionTimer?.cancel();
@@ -208,7 +214,7 @@ class MediaProvider with ChangeNotifier {
       );
       _currentSource = media.source;
       _duration = _soloud!.getLength(_currentSource!);
-      _currentHandle = await _soloud!.play(_currentSource!, volume: _player.state.volume);
+      _currentHandle = await _soloud!.play(_currentSource!, volume: _player.state.volume, paused: isPaused);
 
       _positionTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
         if (_isPlaying && _currentHandle != null) {
@@ -222,7 +228,12 @@ class MediaProvider with ChangeNotifier {
 
       _audioEffects.applyActiveFilters();
       _position = Duration.zero;
-      _isPlaying = true;
+      if (isPaused) {
+        _isPlaying = false;
+      } else {
+        _isPlaying = true;
+      }
+
       _updateMediaProperties(); // Atualiza as propriedades de mídia no SMTC
       notifyListeners();
     } catch (e, stackTrace) {
@@ -353,7 +364,7 @@ class MediaProvider with ChangeNotifier {
         await nextMedia();
         break;
       case PlaylistMode.repeat:
-        await play(currentMedia!);
+        await play(currentMedia!, isPaused: false);
         break;
     }
   }

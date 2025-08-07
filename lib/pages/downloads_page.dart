@@ -61,7 +61,7 @@ class DownloadsPage extends StatelessWidget {
                                           final song = Media(File(download.filePath!), title: title, image: imageBytes, artist: author);
                                           for (var media in Provider.of<MediaProvider>(context, listen: false).mediaFiles) {
                                             if (media.title == song.title) {
-                                              Provider.of<MediaProvider>(context, listen: false).play(media);
+                                              Provider.of<MediaProvider>(context, listen: false).play(media, isPaused: false);
                                               return;
                                             }
                                           }
