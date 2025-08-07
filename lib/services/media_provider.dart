@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:boel_downloader/models/player.dart';
+import 'package:boel_downloader/services/windows_media.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_soloud/flutter_soloud.dart';
@@ -44,9 +45,28 @@ class MediaProvider with ChangeNotifier {
   StreamSubscription<FileSystemEvent>? _folderWatcher;
   final _player = MockPlayer();
   MockPlayer get player => _player;
+  StreamSubscription<String>? _mediaControl;
 
   MediaProvider() {
     _initialize();
+    _mediaControl = MediaPlayer.mediaButtonStream.listen((event) {
+      switch (event) {
+        case 'play':
+          togglePlayPause();
+          break;
+        case 'pause':
+          togglePlayPause();
+          break;
+        case 'next':
+          nextMedia();
+          break;
+        case 'previous':
+          previousMedia();
+          break;
+      }
+    }, onError: (error) {
+      print('Stream error: $error');
+    });
   }
 
   Future<void> _initialize() async {
@@ -72,7 +92,6 @@ class MediaProvider with ChangeNotifier {
   }
 
   Future<void> loadMediaFromFolder({String? folderPath}) async {
-    // Cancela o watcher anterior, se existir
     await _folderWatcher?.cancel();
 
     final selectedPath = folderPath ?? await FilePicker.platform.getDirectoryPath();
@@ -80,7 +99,6 @@ class MediaProvider with ChangeNotifier {
       Directory dir = Directory(selectedPath);
       if (!dir.existsSync()) return;
 
-      // Carrega os arquivos de mídia iniciais
       List<Future<Media>> mediaFutures = dir.listSync().where((file) => file is File && _isMediaFile(file.path)).map((file) async {
         final metadata = readMetadata(file as File, getImage: true);
         String title = metadata.title ?? path.basenameWithoutExtension(file.path);
@@ -94,11 +112,9 @@ class MediaProvider with ChangeNotifier {
       _currentIndex = 0;
       _updateShuffledIndices();
 
-      // Salva o caminho no SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('save_path', selectedPath);
 
-      // Inicia o monitoramento da pasta
       _startFolderWatcher(selectedPath);
 
       notifyListeners();
@@ -117,7 +133,6 @@ class MediaProvider with ChangeNotifier {
     _folderWatcher = dir.watch(events: FileSystemEvent.all).listen((event) async {
       if (event is FileSystemCreateEvent || event is FileSystemModifyEvent || event is FileSystemDeleteEvent) {
         if (_isMediaFile(event.path)) {
-          // Recarrega a lista de arquivos de mídia
           List<Future<Media>> mediaFutures = dir.listSync().where((file) => file is File && _isMediaFile(file.path)).map((file) async {
             final metadata = readMetadata(file as File, getImage: true);
             String title = metadata.title ?? path.basenameWithoutExtension(file.path);
@@ -130,7 +145,6 @@ class MediaProvider with ChangeNotifier {
           _songList = await Future.wait<Media>(mediaFutures);
           _updateShuffledIndices();
 
-          // Ajusta o índice atual, se necessário
           if (_currentIndex >= _songList.length) {
             _currentIndex = _songList.isNotEmpty ? _songList.length - 1 : 0;
           }
@@ -183,14 +197,12 @@ class MediaProvider with ChangeNotifier {
       final file = File(media.file.path);
       if (!await file.exists()) {
         log.severe("File does not exist: ${media.file.path}");
-
         return;
       }
 
       final Uint8List fileBytes = await file.readAsBytes();
-      //usar loadMem em vez de loadFile para circunventar erros com filename
       media.source ??= await _soloud!.loadMem(
-        media.file.path, //referencia
+        media.file.path, // referência
         fileBytes,
         mode: LoadMode.memory,
       );
@@ -211,6 +223,7 @@ class MediaProvider with ChangeNotifier {
       _audioEffects.applyActiveFilters();
       _position = Duration.zero;
       _isPlaying = true;
+      _updateMediaProperties(); // Atualiza as propriedades de mídia no SMTC
       notifyListeners();
     } catch (e, stackTrace) {
       log.severe("Error playing media '${media.file.path}': $e\nStackTrace: $stackTrace");
@@ -226,6 +239,7 @@ class MediaProvider with ChangeNotifier {
       _soloud!.setPause(_currentHandle!, false);
       _isPlaying = true;
     }
+    _updateMediaProperties(); // Atualiza o estado no SMTC
     notifyListeners();
   }
 
@@ -237,6 +251,7 @@ class MediaProvider with ChangeNotifier {
       _positionTimer?.cancel();
       _isPlaying = false;
       _position = Duration.zero;
+      _updateMediaProperties(); // Atualiza o estado no SMTC
       notifyListeners();
     }
   }
@@ -351,6 +366,16 @@ class MediaProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _updateMediaProperties() async {
+    if (currentMedia != null) {
+      await MediaPlayer.setMusicProperties(
+        title: currentMedia!.title,
+        artist: currentMedia!.artist,
+        album: '', // Sem thumbnail agora
+      );
+    }
+  }
+
   @override
   Future<void> dispose() async {
     _savePrefsTimer?.cancel();
@@ -361,6 +386,7 @@ class MediaProvider with ChangeNotifier {
     }
     _soloud?.deinit();
     await _savePrefs();
+    await _mediaControl?.cancel();
     super.dispose();
   }
 }

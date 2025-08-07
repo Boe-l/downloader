@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:boel_downloader/widgets/song_list.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+
 //TODO Salvar alterações do usuario
 class AudioPlayerPage extends StatefulWidget {
   const AudioPlayerPage({super.key});
@@ -35,64 +36,58 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
 
             // initialCollapsed: true,
             child: ScrollConfiguration(
-            behavior: ScrollBehavior().copyWith(scrollbars: false, overscroll: true, dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch}),
+              behavior: ScrollBehavior().copyWith(scrollbars: false, overscroll: true, dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch}),
 
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Text('Eve「心海」歌詞').h3]),
+                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text('Eve「心海」歌詞').h3]),
                     Column(
                       children: [
-                        SelectableText(
-                          
-                          """[Verse 1]
-                幾星霜　期待もないようなふりをした
-                恥ずかし気に　でもわかってる
-                というだけど
-                双曲線　交わらないでいた
-                何もわからぬまま　潜っては深く
-                息も吸えないで
-                
-                [Pre-Chorus]
-                微睡む白んだ光が僕を呼んだ
-                手を伸ばしてくれるなら
-                
-                [Chorus]
-                ああ心はまだ応えられないまま
-                深い海凪いでは　理想描いた今
-                ただ痛いほど願って　忘れはしないから
-                ああこのまま立ち止まってしまったら
-                涙の味でさえ　知らないままだったな
-                君と笑って
-                
-                [Verse 2]
-                空想上の世界を泳いでみたい
-                黄昏の陽には　思い出が
-                流れ落ちた
-                消極的　希望のないような口ぶりで
-                明日を見上げる空　困ったな
-                未来に縋ることさえも
+                        SelectableText("""Test Lyrics (Lorem Ipsum)
 
-                [Pre-Chorus]
-                見紛うくらいの煌めく声が覗いた
-                傷だらけの夢だけど
-                
-                [Bridge]
-                鼓動は速く　ざわめいていた
-                心海の果てに鳴る音が
-                確かに生きた　君との証なら
-                きっと探していた　零れそうな　呼ぶ声が
-                今いくと
-                
-                [Chorus]
-                ああ心はまだ応えられないまま
-                深い海凪いでは　理想描いた今
-                ただ痛いほど願って　忘れはしないから
-                ああこのまま立ち止まってしまったら
-                涙の味でさえ　知らないままだったな
-                君と笑って""").h3,
+[Verse 1]
+Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Ut enim ad minim veniam, quis nostrud exercitation,
+Ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+[Pre-Chorus]
+Duis aute irure dolor in reprehenderit in voluptate,
+Velit esse cillum dolore eu fugiat nulla pariatur.
+
+[Chorus]
+Excepteur sint occaecat cupidatat non proident,
+Sunt in culpa qui officia deserunt mollit anim id est laborum.
+Perspiciatis unde omnis iste natus error sit voluptatem,
+Accusantium doloremque laudantium, totam rem aperiam.
+Eaque ipsa quae ab illo inventore veritatis et quasi,
+Architecto beatae vitae dicta sunt explicabo.
+
+[Verse 2]
+Nemo enim ipsam voluptatem quia voluptas sit aspernatur,
+Aut odit aut fugit, sed quia consequuntur magni dolores eos.
+Qui ratione voluptatem sequi nesciunt, neque porro quisquam est,
+Qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.
+
+[Pre-Chorus]
+Sed quia non numquam eius modi tempora incidunt ut labore,
+Et dolore magnam aliquam quaerat voluptatem.
+
+[Bridge]
+Nam libero tempore, cum soluta nobis est eligendi optio,
+Cumque nihil impedit quo minus id quod maxime placeat,
+Facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.
+Temporibus autem quibusdam et aut officiis debitis aut rerum,
+Necessitatibus saepe eveniet ut et voluptates repudiandae.
+
+[Chorus]
+Excepteur sint occaecat cupidatat non proident,
+Sunt in culpa qui officia deserunt mollit anim id est laborum.
+Perspiciatis unde omnis iste natus error sit voluptatem,
+Accusantium doloremque laudantium, totam rem aperiam.
+Eaque ipsa quae ab illo inventore veritatis et quasi,
+Architecto beatae vitae dicta sunt explicabo.""").h3,
                       ],
                     ),
                   ],
