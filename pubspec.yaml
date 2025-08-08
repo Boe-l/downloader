@@ -58,6 +58,9 @@ dependencies:
   package_info_plus: ^4.2.0
   archive: ^3.6.1
   dio: ^5.8.0+1
+  flutter_quill: ^11.4.2
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
