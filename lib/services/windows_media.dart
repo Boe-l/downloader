@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
-class MediaPlayer {
+class SMTCWIN {
   static const MethodChannel _methodChannel = MethodChannel('com.example/audio_player');
   static const EventChannel _eventChannel = EventChannel('com.example/audio_player_events');
   static Stream<String>? _mediaButtonStream;

@@ -67,7 +67,7 @@ class DownloadsPage extends StatelessWidget {
                                           }
                                           Provider.of<MediaProvider>(context, listen: false).setCurrentMedia(song);
                                         } on MetadataParserException catch (e) {
-                                          print('Error parsing metadata: ${e.message}');
+                                          debugPrint('Error parsing metadata: ${e.message}');
                                         }
                                       }
                                     },

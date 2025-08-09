@@ -56,94 +56,104 @@ class _MainWidgetState extends State<MainWidget> {
     return OutlinedContainer(
       height: 600,
       width: 800,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+      child: Column(
         children: [
-          NavigationRail(
-            backgroundColor: theme.colorScheme.card,
-            labelType: NavigationLabelType.expanded,
-            labelPosition: NavigationLabelPosition.end,
-            alignment: NavigationRailAlignment.start,
-            expanded: expanded,
-            index: selected,
-            onSelected: (value) {
-              setState(() {
-                selected = value;
-              });
-
-              switch (selected) {
-                case 0:
-                  context.go('/home');
-                case 1:
-                  context.go('/downloads');
-                case 2:
-                  context.go('/playlists');
-                case 3:
-                  context.go('/player');
-                case 4:
-                  context.go('/history');
-                case 5:
-                  context.go('/favorites');
-                case 6:
-                  context.go('/settings');
-                default:
-                  context.go('/home');
-              }
-            },
-            children: [
-              NavigationButton(
-                alignment: Alignment.centerLeft,
-                label: const Text('Menu'),
-                onPressed: () {
-                  setState(() {
-                    expanded = !expanded;
-                  });
-                },
-                child: const Icon(Icons.menu),
-              ),
-              const NavigationDivider(),
-              buildButton('Baixar', HugeIcons.strokeRoundedYoutube),
-              buildButton('Downloads', HugeIcons.strokeRoundedDownloadSquare02),
-              buildButton('Playlists', HugeIcons.strokeRoundedPlayList),
-              buildButton('Player', HugeIcons.strokeRoundedMusicNote01),
-              const NavigationDivider(),
-              buildButton('Histórico', HugeIcons.strokeRoundedClock02),
-              buildButton('Favoritos', HugeIcons.strokeRoundedFavourite),
-              const NavigationDivider(),
-              buildButton('Configurações', HugeIcons.strokeRoundedSettings01),
-            ],
-          ),
-          const VerticalDivider(),
           Expanded(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SizedBox(
-                  width: constraints.maxWidth, // Ensure finite width
-                  child: Stack(
-                    children: [
-                      widget.shell, // Background content
-                      Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Padding(padding: const EdgeInsets.only(left: 20, bottom: 10, right: 20), child: AnimatedMediaCard()),
-                      ),
-                      Align(
-                        alignment: Alignment.topCenter,
-                        child: SizedBox(
-                          height: 30,
-                          child: Row(
-                            children: [
-                              Expanded(child: MoveWindow()),
-                              WindowButtons(),
-                            ],
-                          ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                NavigationRail(
+                  backgroundColor: theme.colorScheme.card,
+                  labelType: NavigationLabelType.expanded,
+                  labelPosition: NavigationLabelPosition.end,
+                  alignment: NavigationRailAlignment.start,
+                  expanded: expanded,
+                  index: selected,
+                  onSelected: (value) {
+                    setState(() {
+                      selected = value;
+                    });
+            
+                    switch (selected) {
+                      case 0:
+                        context.go('/home');
+                      case 1:
+                        context.go('/downloads');
+                      case 2:
+                        context.go('/playlists');
+                      case 3:
+                        context.go('/player');
+                      case 4:
+                        context.go('/history');
+                      case 5:
+                        context.go('/favorites');
+                      case 6:
+                        context.go('/settings');
+                      default:
+                        context.go('/home');
+                    }
+                  },
+                  children: [
+                    NavigationButton(
+                      alignment: Alignment.centerLeft,
+                      label: const Text('Menu'),
+                      onPressed: () {
+                        setState(() {
+                          expanded = !expanded;
+                        });
+                      },
+                      child: const Icon(Icons.menu),
+                    ),
+                    const NavigationDivider(),
+                    buildButton('Baixar', HugeIcons.strokeRoundedYoutube),
+                    buildButton('Downloads', HugeIcons.strokeRoundedDownloadSquare02),
+                    buildButton('Playlists', HugeIcons.strokeRoundedPlayList),
+                    buildButton('Player', HugeIcons.strokeRoundedMusicNote01),
+                    const NavigationDivider(),
+                    buildButton('Histórico', HugeIcons.strokeRoundedClock02),
+                    buildButton('Favoritos', HugeIcons.strokeRoundedFavourite),
+                    const NavigationDivider(),
+                    buildButton('Configurações', HugeIcons.strokeRoundedSettings01),
+                  ],
+                ),
+                const VerticalDivider(),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SizedBox(
+                        width: constraints.maxWidth, // Ensure finite width
+                        child: Stack(
+                          children: [
+                            widget.shell, // Background content
+                            // Align(
+                            //   alignment: Alignment.bottomLeft,
+                            //   child: Padding(padding: const EdgeInsets.only(left: 20, bottom: 10, right: 20), child: AnimatedMediaCard()),
+                            // ),
+                            Align(
+                              alignment: Alignment.topCenter,
+                              child: SizedBox(
+                                height: 30,
+                                child: Row(
+                                  children: [
+                                    Expanded(child: MoveWindow()),
+                                    WindowButtons(),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
+          Align(
+          alignment: Alignment.bottomLeft,
+          child: AnimatedMediaCard(),
+        ),
         ],
       ),
     );

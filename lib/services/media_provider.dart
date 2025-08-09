@@ -47,28 +47,31 @@ class MediaProvider with ChangeNotifier {
   final _player = MockPlayer();
   MockPlayer get player => _player;
   StreamSubscription<String>? _mediaControl;
-
+  final _throttler = Throttler(milliseconds: 1200);
   MediaProvider() {
     _initialize();
-    _mediaControl = MediaPlayer.mediaButtonStream.listen(
+    _mediaControl = SMTCWIN.mediaButtonStream.listen(
       (event) {
         switch (event) {
           case 'play':
-            Throttler(milliseconds: 300).run(() => togglePlayPause());
+            // _throttler.run(() => togglePlayPause());
+            togglePlayPause();
             break;
           case 'pause':
-            Throttler(milliseconds: 300).run(() => togglePlayPause());
+            // _throttler.run(() => togglePlayPause());
+            togglePlayPause();
+
             break;
           case 'next':
-            Throttler(milliseconds: 300).run(() => nextMedia());
+            _throttler.run(() => nextMedia());
             break;
           case 'previous':
-            Throttler(milliseconds: 300).run(() => previousMedia());
+            _throttler.run(() => previousMedia());
             break;
         }
       },
       onError: (error) {
-        print('Stream error: $error');
+        debugPrint('Stream error: $error');
       },
     );
   }
@@ -79,6 +82,8 @@ class MediaProvider with ChangeNotifier {
     await _loadPrefs();
     _audioEffects.setSoLoud(_soloud!);
     _soloud!.setMaxActiveVoiceCount(1);
+    // _soloud!.setVisualizationEnabled(true);
+    // _soloud!.setFftSmoothing(0.7);
   }
 
   Future<void> _loadPrefs() async {
@@ -194,7 +199,7 @@ class MediaProvider with ChangeNotifier {
     try {
       if (_currentHandle != null) {
         await _soloud!.stop(_currentHandle!);
-        
+
         _currentHandle = null;
         _currentSource = null;
         _positionTimer?.cancel();
@@ -379,7 +384,7 @@ class MediaProvider with ChangeNotifier {
 
   Future<void> _updateMediaProperties() async {
     if (currentMedia != null) {
-      await MediaPlayer.setMusicProperties(
+      await SMTCWIN.setMusicProperties(
         title: currentMedia!.title,
         artist: currentMedia!.artist,
         album: '', // Sem thumbnail agora
