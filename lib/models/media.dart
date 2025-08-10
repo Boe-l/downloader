@@ -7,6 +7,8 @@ class Media {
   final Uint8List? image;
   final String artist;
   final String title;
+  final Duration duration;
   AudioSource? source;
-  Media(this.file, {this.source, this.image, this.artist = '', this.title = ''});
+
+  Media(this.file, {this.source, this.image, this.artist = '', this.title = '', required this.duration});
 }

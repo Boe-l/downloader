@@ -41,6 +41,7 @@ class DownloadService with ChangeNotifier {
   final YoutubeExplode _yt = YoutubeExplode();
   final List<DownloadItem> _downloads = [];
   final FFMpegHelper _ffmpeg = FFMpegHelper.instance;
+  late final SharedPrefs _prefs = SharedPrefs();
   double _ffmpegDownloadProgress = 0.0;
 
   List<DownloadItem> get downloads => List.unmodifiable(_downloads);
@@ -82,7 +83,7 @@ class DownloadService with ChangeNotifier {
   }
 
   Future<void> startDownload(Video video, BuildContext context, MediaFormat type) async {
-    String? savedPath = await SharedPrefs().getPath();
+    String? savedPath = await _prefs.getPath();
     Directory directory = Directory(savedPath ?? (await getDownloadsDirectory())!.path);
     // Only check FFmpeg setup for downloads
 
@@ -90,7 +91,7 @@ class DownloadService with ChangeNotifier {
       await _checkFFmpegSetup(context);
     }
     // Save the selected format to SharedPrefs
-    await SharedPrefs().saveLastFormat(type == MediaFormat.mp3 ? 'MP3' : 'MP4');
+    await _prefs.saveLastFormat(type == MediaFormat.mp3 ? 'MP3' : 'MP4');
     final downloadItem = DownloadItem(id: video.id.value, title: video.title, author: video.author, imageUrl: video.thumbnails.mediumResUrl, format: type);
     _downloads.add(downloadItem);
     notifyListeners();
@@ -285,7 +286,7 @@ class DownloadService with ChangeNotifier {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
 
     if (selectedDirectory != null) {
-      await SharedPrefs().savePath(selectedDirectory);
+      await _prefs.savePath(selectedDirectory);
       return true;
     } else {
       return false;

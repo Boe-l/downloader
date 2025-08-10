@@ -113,9 +113,10 @@ class MediaProvider with ChangeNotifier {
         final metadata = readMetadata(file as File, getImage: true);
         String title = metadata.title ?? path.basenameWithoutExtension(file.path);
         String author = metadata.artist ?? 'Artista desconhecido.';
+        Duration duration = metadata.duration ?? Duration(seconds: 0);
         Uint8List? imageBytes = metadata.pictures.isNotEmpty ? metadata.pictures[0].bytes : null;
 
-        return Media(File(file.path), title: title, image: imageBytes, artist: author);
+        return Media(File(file.path), title: title, image: imageBytes, artist: author, duration: duration);
       }).toList();
 
       _songList = await Future.wait<Media>(mediaFutures);
@@ -148,8 +149,9 @@ class MediaProvider with ChangeNotifier {
             String title = metadata.title ?? path.basenameWithoutExtension(file.path);
             String author = metadata.artist ?? 'Artista desconhecido.';
             Uint8List? imageBytes = metadata.pictures.isNotEmpty ? metadata.pictures[0].bytes : null;
+            Duration duration = metadata.duration ?? Duration(seconds: 0);
 
-            return Media(File(file.path), title: title, image: imageBytes, artist: author);
+            return Media(File(file.path), title: title, image: imageBytes, artist: author, duration: duration);
           }).toList();
 
           _songList = await Future.wait<Media>(mediaFutures);

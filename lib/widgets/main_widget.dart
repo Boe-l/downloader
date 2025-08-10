@@ -14,15 +14,20 @@ class MainWidget extends StatefulWidget {
 }
 
 class _MainWidgetState extends State<MainWidget> {
-  bool expanded = true;
+  NavigationRailAlignment alignment = NavigationRailAlignment.center;
+  NavigationLabelType labelType = NavigationLabelType.tooltip;
+  NavigationLabelPosition labelPosition = NavigationLabelPosition.bottom;
   int selected = 0;
 
-  NavigationItem buildButton(String text, IconData icon) {
-    return NavigationItem(label: Text(text), alignment: Alignment.centerLeft, selectedStyle: const ButtonStyle.primaryIcon(), child: Icon(icon));
-  }
-
-  NavigationLabel buildLabel(String label) {
-    return NavigationLabel(alignment: Alignment.centerLeft, child: Text(label).semiBold().muted());
+  bool customButtonStyle = false;
+  bool expanded = true;
+  NavigationItem buildButton(String label, IconData icon) {
+    return NavigationItem(
+      style: customButtonStyle ? const ButtonStyle.muted(density: ButtonDensity.icon) : null,
+      selectedStyle: customButtonStyle ? const ButtonStyle.fixed(density: ButtonDensity.icon) : null,
+      label: Text(label),
+      child: Icon(icon),
+    );
   }
 
   int _getSelectedIndexFromPath(String currentPath) {
@@ -52,69 +57,71 @@ class _MainWidgetState extends State<MainWidget> {
     final currentPath = GoRouterState.of(context).uri.toString();
     selected = _getSelectedIndexFromPath(currentPath);
 
-    final theme = Theme.of(context);
+    // final theme = Theme.of(context);
     return OutlinedContainer(
-      height: 600,
-      width: 800,
+      // height: 600,
+      // width: 800,
       child: Column(
         children: [
           Expanded(
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                NavigationRail(
-                  backgroundColor: theme.colorScheme.card,
-                  labelType: NavigationLabelType.expanded,
-                  labelPosition: NavigationLabelPosition.end,
-                  alignment: NavigationRailAlignment.start,
-                  expanded: expanded,
-                  index: selected,
-                  onSelected: (value) {
-                    setState(() {
-                      selected = value;
-                    });
-            
-                    switch (selected) {
-                      case 0:
-                        context.go('/home');
-                      case 1:
-                        context.go('/downloads');
-                      case 2:
-                        context.go('/playlists');
-                      case 3:
-                        context.go('/player');
-                      case 4:
-                        context.go('/history');
-                      case 5:
-                        context.go('/favorites');
-                      case 6:
-                        context.go('/settings');
-                      default:
-                        context.go('/home');
-                    }
-                  },
-                  children: [
-                    NavigationButton(
-                      alignment: Alignment.centerLeft,
-                      label: const Text('Menu'),
-                      onPressed: () {
-                        setState(() {
-                          expanded = !expanded;
-                        });
-                      },
-                      child: const Icon(Icons.menu),
-                    ),
-                    const NavigationDivider(),
-                    buildButton('Baixar', HugeIcons.strokeRoundedYoutube),
-                    buildButton('Downloads', HugeIcons.strokeRoundedDownloadSquare02),
-                    buildButton('Playlists', HugeIcons.strokeRoundedPlayList),
-                    buildButton('Player', HugeIcons.strokeRoundedMusicNote01),
-                    const NavigationDivider(),
-                    buildButton('Histórico', HugeIcons.strokeRoundedClock02),
-                    buildButton('Favoritos', HugeIcons.strokeRoundedFavourite),
-                    const NavigationDivider(),
-                    buildButton('Configurações', HugeIcons.strokeRoundedSettings01),
-                  ],
+                SizedBox(
+                  width: 70,
+                  child: NavigationRail(
+                    alignment: alignment,
+                    labelType: labelType,
+                    index: selected,
+                    
+                    labelPosition: labelPosition,
+                    expanded: expanded,
+                    onSelected: (value) {
+                      setState(() {
+                        selected = value;
+                      });
+                  
+                      switch (selected) {
+                        case 0:
+                          context.go('/home');
+                        case 1:
+                          context.go('/downloads');
+                        case 2:
+                          context.go('/playlists');
+                        case 3:
+                          context.go('/player');
+                        case 4:
+                          context.go('/history');
+                        case 5:
+                          context.go('/favorites');
+                        case 6:
+                          context.go('/settings');
+                        default:
+                          context.go('/home');
+                      }
+                    },
+                    children: [
+                      // NavigationButton(
+                      //   alignment: Alignment.centerLeft,
+                      //   label: const Text('Menu'),
+                      //   onPressed: () {
+                      //     setState(() {
+                      //       expanded = !expanded;
+                      //     });
+                      //   },
+                      //   child: const Icon(Icons.menu),
+                      // ),
+                      // const NavigationDivider(thickness: 2,),
+                      buildButton('Baixar', HugeIcons.strokeRoundedYoutube),
+                      buildButton('Downloads', HugeIcons.strokeRoundedDownloadSquare02),
+                      buildButton('Playlists', HugeIcons.strokeRoundedPlayList),
+                      buildButton('Player', HugeIcons.strokeRoundedMusicNote01),
+                      buildButton('Histórico', HugeIcons.strokeRoundedClock02),
+                      buildButton('Favoritos', HugeIcons.strokeRoundedFavourite),
+                      // const NavigationDivider(),
+                      buildButton('Configurações', HugeIcons.strokeRoundedSettings01),
+                    ],
+                  ),
                 ),
                 const VerticalDivider(),
                 Expanded(
@@ -150,10 +157,7 @@ class _MainWidgetState extends State<MainWidget> {
               ],
             ),
           ),
-          Align(
-          alignment: Alignment.bottomLeft,
-          child: AnimatedMediaCard(),
-        ),
+          Align(alignment: Alignment.bottomLeft, child: AnimatedMediaCard()),
         ],
       ),
     );

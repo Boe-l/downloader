@@ -64,23 +64,28 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              onTap: () => _throttler.run(() {
-                                switchHeight();
-                              }),
-                              child: SizedBox(
-                                height: 15,
-                                width: double.infinity,
-                                child: Center(
-                                  child: ValueListenableBuilder<bool>(
-                                    valueListenable: _isExpanded,
-                                    builder: (context, isExpanded, child) {
-                                      return Icon(isExpanded ? HugeIcons.strokeRoundedArrowDown01 : HugeIcons.strokeRoundedArrowUp01, size: 20);
-                                    },
+                          GestureDetector(
+                            onTap: () => _throttler.run(() {
+                              switchHeight();
+                            }),
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: ValueListenableBuilder<bool>(
+                                      valueListenable: _isExpanded,
+                                      builder: (context, value, child) {
+                                        return AnimatedRotation(
+                                          turns: !value ? 0.5 : 0.0, // Rotate 180 degrees (0.5 turns) when expanded
+                                          duration: const Duration(milliseconds: 300), // Smooth rotation over 300ms
+                                          curve: Curves.easeInOut, // Smooth easing for natural feel
+                                          child: const Icon(HugeIcons.strokeRoundedArrowDown01, size: 20),
+                                        );
+                                      },
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                             ),
                           ),
@@ -112,7 +117,7 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
                                                     Button(
                                                       style: ButtonVariance.primary.withBorderRadius(borderRadius: const BorderRadius.all(Radius.circular(20))),
                                                       disableHoverEffect: true,
-                                                      onPressed: () =>  provider.togglePlayPause(),
+                                                      onPressed: () => provider.togglePlayPause(),
                                                       child: Icon(size: 20, provider.currentMedia != null && provider.isPlaying ? HugeIcons.strokeRoundedPause : HugeIcons.strokeRoundedPlay),
                                                     ),
                                                     const SizedBox(width: 6),
@@ -239,14 +244,17 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
                                     alignment: Alignment.bottomLeft,
                                     child: Row(
                                       children: [
-                                        SizedBox(
-                                          height: 90,
-                                          width: 90,
-                                          child: ClipRRect(
-                                            borderRadius: const BorderRadius.all(Radius.circular(5)),
-                                            child: MouseRegion(
-                                              cursor: SystemMouseCursors.click,
-                                              child: image != null ? Image.memory(image, fit: BoxFit.cover) : const Center(child: Icon(HugeIcons.strokeRoundedMusicNote01, size: 60)),
+                                        Padding(
+                                          padding: const EdgeInsets.only(left: 10.0),
+                                          child: SizedBox(
+                                            height: 60,
+                                            width: 60,
+                                            child: ClipRRect(
+                                              borderRadius: const BorderRadius.all(Radius.circular(5)),
+                                              child: MouseRegion(
+                                                cursor: SystemMouseCursors.click,
+                                                child: image != null ? Image.memory(image, fit: BoxFit.cover) : const Center(child: Icon(HugeIcons.strokeRoundedMusicNote01, size: 60)),
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -265,13 +273,23 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
                                     ),
                                   ),
                                 )
-                              : IgnorePointer(
-                                  ignoring: true,
-                                  child: AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 300),
-                                    opacity: isExpanded ? 0.0 : 1.0,
-                                    child: Row(
-                                      children: [Text(truncateText(title, 40), overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15))],
+                              : AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 300),
+                                  opacity: isExpanded ? 0.0 : 1.0,
+                                  child: GestureDetector(
+                                    onTap: () => _throttler.run(() {
+                                      switchHeight();
+                                    }),
+                                    child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                                      child: Row(
+                                        children: [
+                                          SizedBox(width: 72),
+                                          Expanded(
+                                            child: Text(truncateText(title, 40), overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15)),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 );

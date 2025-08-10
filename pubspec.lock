@@ -794,10 +794,10 @@ packages:
     dependency: "direct main"
     description:
       name: shadcn_flutter
-      sha256: "979a86e203eb1fb139e8b5c84b49b17b28808804cbff189b43052d56ba6854b5"
+      sha256: ae32d20d23d1a7c3921a047ed41d011a85eca0a39e3d77286f7ab28f0ff887d0
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.37"
+    version: "0.0.38"
   shared_preferences:
     dependency: "direct main"
     description:

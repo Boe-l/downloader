@@ -52,24 +52,24 @@ class DownloadsPage extends StatelessWidget {
                                     // padding: EdgeInsets.all(0),
                                     style: ButtonVariance.outline,
                                     onPressed: () {
-                                      if (download.status == DownloadStatus.completed && download.format == MediaFormat.mp3) {
-                                        try {
-                                          final metadata = readMetadata(File(download.filePath!), getImage: true);
-                                          String title = metadata.title ?? path.basenameWithoutExtension(download.filePath!);
-                                          String author = metadata.artist ?? 'Artista desconhecido.';
-                                          Uint8List? imageBytes = metadata.pictures.isNotEmpty ? metadata.pictures[0].bytes : null;
-                                          final song = Media(File(download.filePath!), title: title, image: imageBytes, artist: author);
-                                          for (var media in Provider.of<MediaProvider>(context, listen: false).mediaFiles) {
-                                            if (media.title == song.title) {
-                                              Provider.of<MediaProvider>(context, listen: false).play(media, isPaused: false);
-                                              return;
-                                            }
-                                          }
-                                          Provider.of<MediaProvider>(context, listen: false).setCurrentMedia(song);
-                                        } on MetadataParserException catch (e) {
-                                          debugPrint('Error parsing metadata: ${e.message}');
-                                        }
-                                      }
+                                      // if (download.status == DownloadStatus.completed && download.format == MediaFormat.mp3) {
+                                      //   try {
+                                      //     final metadata = readMetadata(File(download.filePath!), getImage: true);
+                                      //     String title = metadata.title ?? path.basenameWithoutExtension(download.filePath!);
+                                      //     String author = metadata.artist ?? 'Artista desconhecido.';
+                                      //     Uint8List? imageBytes = metadata.pictures.isNotEmpty ? metadata.pictures[0].bytes : null;
+                                      //     final song = Media(File(download.filePath!), title: title, image: imageBytes, artist: author);
+                                      //     for (var media in Provider.of<MediaProvider>(context, listen: false).mediaFiles) {
+                                      //       if (media.title == song.title) {
+                                      //         Provider.of<MediaProvider>(context, listen: false).play(media, isPaused: false);
+                                      //         return;
+                                      //       }
+                                      //     }
+                                      //     Provider.of<MediaProvider>(context, listen: false).setCurrentMedia(song);
+                                      //   } on MetadataParserException catch (e) {
+                                      //     debugPrint('Error parsing metadata: ${e.message}');
+                                      //   }
+                                      // }
                                     },
                                     child: Stack(
                                       children: [
