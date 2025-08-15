@@ -1,12 +1,9 @@
-import 'dart:typed_data';
 import 'package:boel_downloader/models/playlists.dart';
 import 'package:boel_downloader/services/media_provider.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:youtube_explode_dart/youtube_explode_dart.dart';
 
 class PlaylistsWidget extends StatefulWidget {
   const PlaylistsWidget({super.key});
@@ -16,12 +13,19 @@ class PlaylistsWidget extends StatefulWidget {
 }
 
 class _PlaylistsWidgetState extends State<PlaylistsWidget> {
+  late final ScrollController _controller;
+  @override
+  void initState() {
+    super.initState();
+    _controller = ScrollController();
+  }
+
   @override
   Widget build(BuildContext context) {
     return SortableLayer(
       lock: true,
       child: ScrollableSortableLayer(
-        controller: ScrollController(),
+        controller: _controller,
         child: Selector<MediaProvider, List<PlaylistModel>>(
           selector: (_, provider) => provider.playLists,
           builder: (_, value, _) {

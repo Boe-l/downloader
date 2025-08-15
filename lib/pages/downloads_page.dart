@@ -1,13 +1,7 @@
-import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:boel_downloader/models/enums.dart';
-import 'package:boel_downloader/models/media.dart';
-import 'package:boel_downloader/services/media_provider.dart';
 import 'package:boel_downloader/tools/url_lancher.dart';
 import 'package:hugeicons/hugeicons.dart';
-import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:boel_downloader/services/download_service.dart';

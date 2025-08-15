@@ -1,8 +1,8 @@
 import 'dart:ui';
-import 'package:boel_downloader/services/files_provider.dart';
-import 'package:boel_downloader/services/media_provider.dart';
 import 'package:boel_downloader/models/playlists.dart';
+import 'package:boel_downloader/services/media_provider.dart';
 import 'package:boel_downloader/widgets/playlist_header.dart';
+import 'package:flutter/material.dart' show FlexibleSpaceBar, kToolbarHeight;
 import 'package:flutter/services.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
@@ -27,52 +27,86 @@ class _SongListState extends State<SongList> {
         final mediaFiles = widget.playlist?.mediaFiles ?? mediaProvider.mediaFiles;
         final currentIndex = widget.playlist?.currentIndex ?? mediaProvider.currentIndex;
         final width = MediaQuery.of(context).size.width;
+
         return Scaffold(
           child: ScrollConfiguration(
-            behavior: const ScrollBehavior().copyWith(scrollbars: false, overscroll: true, dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch}),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 60),
-                  PlaylistHeader(playlist: widget.playlist!, width: width),
-                  Divider(),
-                  Container(
-                    color: context.theme.colorScheme.background,
+            behavior: const ScrollBehavior().copyWith(scrollbars: false, overscroll: true, dragDevices: {PointerDeviceKind.touch}),
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  backgroundColor: context.theme.colorScheme.background,
+                  expandedHeight: 350,
+                  pinned: true,
+                  stretch: true,
+                  foregroundColor: context.theme.colorScheme.background,
+                  surfaceTintColor: context.theme.colorScheme.background,
+                  flexibleSpace: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final appBarHeight = constraints.biggest.height;
+                      final showPinnedTitle = appBarHeight <= kToolbarHeight + 20;
+
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          FlexibleSpaceBar(
+                            background: PlaylistHeader(playlist: widget.playlist!, width: width),
+                          ),
+
+                          Positioned(
+                            left: 6,
+                            bottom: 16,
+                            child: AnimatedOpacity(
+                              opacity: showPinnedTitle ? 1.0 : 0.0,
+                              duration: const Duration(milliseconds: 200),
+                              child: Row(
+                                children: [
+                                  SizedBox(width: 40),
+                                  Text(
+                                    widget.playlist!.name,
+                                    style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                                  ).h1,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+
+                SliverPersistentHeader(
+                  pinned: true,
+                  // floating: true,
+                  delegate: _SongListHeaderDelegate(
                     child: Column(
                       children: [
-                        Padding(
+                        Container(
+                          color: context.theme.colorScheme.background,
                           padding: const EdgeInsets.all(8.0),
                           child: Row(
-                            children: [
-                              // ExcludeFocus(
-                              //   child: Button(
-                              //     style: ButtonVariance.menubar,
-                              //     onPressed: () {
-                              //       // Futuramente: abrir diálogo para adicionar mídia à playlist
-                              //     },
-                              //     child: const Icon(HugeIcons.strokeRoundedAddCircle),
-                              //   ),
-                              // ),
-                              SizedBox(width: 40,),
+                            children: const [
+                              SizedBox(width: 40),
                               Text('Título'),
-                              const Spacer(),
-                              const Spacer(),
-                              const Text('Artista'),
-                              const SizedBox(width: 118),
-                              const Spacer(flex: 2),
-                              const Icon(HugeIcons.strokeRoundedClock01),
-                              const SizedBox(width: 50),
+                              Spacer(),
+                              Text('Artista'),
+                              SizedBox(width: 118),
+                              Spacer(flex: 1),
+                              Icon(HugeIcons.strokeRoundedClock01),
+                              SizedBox(width: 50),
                             ],
                           ),
                         ),
-                        const Divider(),
+                        Divider(),
                       ],
                     ),
                   ),
-                  ...mediaFiles.asMap().entries.map((entry) {
-                    final index = entry.key;
-                    final media = entry.value;
+                ),
+
+                // const SliverToBoxAdapter(child: Divider(height: 2,)),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final media = mediaFiles[index];
                     final isHovered = _hoveredIndex == index;
 
                     return MouseRegion(
@@ -89,8 +123,8 @@ class _SongListState extends State<SongList> {
                               leading: const Icon(HugeIcons.strokeRoundedPlay),
                               trailing: const MenuShortcut(activator: SingleActivator(LogicalKeyboardKey.keyP, control: true)),
                               child: const Text('Tocar'),
+                              onPressed: (a) => mediaProvider.setCurrentMedia(media),
                             ),
-
                             MenuButton(
                               leading: const Icon(HugeIcons.strokeRoundedFavourite),
                               trailing: const MenuShortcut(activator: SingleActivator(LogicalKeyboardKey.keyF, control: true)),
@@ -106,7 +140,7 @@ class _SongListState extends State<SongList> {
                             padding: const EdgeInsets.all(8.0),
                             child: GestureDetector(
                               onTap: () {
-                                // Futuramente: chamar setCurrentMedia da playlist
+                                mediaProvider.setCurrentMedia(media);
                               },
                               child: Row(
                                 children: [
@@ -170,15 +204,39 @@ class _SongListState extends State<SongList> {
                         ),
                       ),
                     );
-                  }),
-                  SizedBox(height: 100,)
-                ],
-              ),
+                  }, childCount: mediaFiles.length),
+                ),
+
+                // Espaço no final
+                const SliverToBoxAdapter(child: SizedBox(height: 100)),
+              ],
             ),
           ),
         );
       },
     );
+  }
+}
+
+class _SongListHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _SongListHeaderDelegate({required this.child});
+
+  @override
+  double get minExtent => 56;
+
+  @override
+  double get maxExtent => 56;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return SizedBox.expand(child: child);
+  }
+
+  @override
+  bool shouldRebuild(covariant _SongListHeaderDelegate oldDelegate) {
+    return oldDelegate.child != child;
   }
 }
 

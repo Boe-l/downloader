@@ -1,7 +1,5 @@
-import 'dart:typed_data';
 
 import 'package:bitsdojo_window/bitsdojo_window.dart';
-import 'package:boel_downloader/models/playlists.dart';
 import 'package:boel_downloader/widgets/animated_media_card.dart';
 import 'package:boel_downloader/widgets/playlists_widget.dart';
 import 'package:boel_downloader/widgets/windows.dart';

@@ -1,6 +1,5 @@
 import 'package:boel_downloader/pages/equalizer.dart';
 import 'package:boel_downloader/services/media_provider.dart';
-import 'package:boel_downloader/services/playlist_provider.dart';
 import 'package:boel_downloader/tools/Throttler.dart';
 import 'package:boel_downloader/widgets/effect_knobs.dart';
 import 'package:flutter/gestures.dart';

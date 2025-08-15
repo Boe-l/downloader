@@ -1,6 +1,5 @@
 import 'package:boel_downloader/models/playlists.dart';
 import 'package:boel_downloader/widgets/song_list.dart';
-import 'package:boel_downloader/widgets/visualizer.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:hugeicons/hugeicons.dart';

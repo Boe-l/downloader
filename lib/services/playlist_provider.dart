@@ -9,12 +9,12 @@ import 'shared_prefs.dart';
 
 class PlaylistsHandler {
   static final Logger _log = Logger('PlaylistsHandler');
-  final FilesHandler _filesHandler;
+  // final FilesHandler _filesHandler;
   late MediaProvider _mediaProvider;
   List<PlaylistModel> playlists = [];
   PlaylistModel? currentPlaylist;
 
-  PlaylistsHandler({FilesHandler? filesHandler}) : _filesHandler = filesHandler ?? FilesHandler() {
+  PlaylistsHandler({FilesHandler? filesHandler}) /*: _filesHandler = filesHandler ?? FilesHandler() */ {
     _initialize();
   }
 
@@ -46,10 +46,7 @@ class PlaylistsHandler {
   }
 
   Future<void> removePlaylist(String playlistId) async {
-    final removedPlaylist = playlists.firstWhere(
-      (p) => p.hash == playlistId,
-      orElse: () => PlaylistModel(name: ''),
-    );
+    final removedPlaylist = playlists.firstWhere((p) => p.hash == playlistId, orElse: () => PlaylistModel(name: ''));
     if (removedPlaylist.name.isEmpty) {
       _log.warning('Playlist with hash $playlistId not found.');
       return;
@@ -69,10 +66,7 @@ class PlaylistsHandler {
   }
 
   Future<void> editPlaylist(String playlistId, {String? name, String? description, Uint8List? image}) async {
-    final playlist = playlists.firstWhere(
-      (p) => p.hash == playlistId,
-      orElse: () => PlaylistModel(name: ''),
-    );
+    final playlist = playlists.firstWhere((p) => p.hash == playlistId, orElse: () => PlaylistModel(name: ''));
     if (playlist.name.isEmpty) {
       _log.warning('Playlist with hash $playlistId not found for editing.');
       return;
@@ -86,10 +80,7 @@ class PlaylistsHandler {
   }
 
   void setCurrentPlaylist(String playlistId) {
-    final playlist = playlists.firstWhere(
-      (p) => p.hash == playlistId,
-      orElse: () => PlaylistModel(name: ''),
-    );
+    final playlist = playlists.firstWhere((p) => p.hash == playlistId, orElse: () => PlaylistModel(name: ''));
     if (playlist.name.isEmpty) {
       _log.warning('Playlist with hash $playlistId not found.');
       return;
@@ -103,10 +94,7 @@ class PlaylistsHandler {
   }
 
   Future<void> addMediaToPlaylist(Media media, String playlistId) async {
-    final playlist = playlists.firstWhere(
-      (p) => p.hash == playlistId,
-      orElse: () => PlaylistModel(name: ''),
-    );
+    final playlist = playlists.firstWhere((p) => p.hash == playlistId, orElse: () => PlaylistModel(name: ''));
     if (playlist.name.isEmpty) {
       _log.warning('Playlist with hash $playlistId not found.');
       return;
@@ -123,10 +111,7 @@ class PlaylistsHandler {
   }
 
   Future<void> removeMediaFromPlaylist(Media media, String playlistId) async {
-    final playlist = playlists.firstWhere(
-      (p) => p.hash == playlistId,
-      orElse: () => PlaylistModel(name: ''),
-    );
+    final playlist = playlists.firstWhere((p) => p.hash == playlistId, orElse: () => PlaylistModel(name: ''));
     if (playlist.name.isEmpty) {
       _log.warning('Playlist with hash $playlistId not found.');
       return;
@@ -149,10 +134,7 @@ class PlaylistsHandler {
   Future<void> updatePlaylistOrder(List<String> playlistIds) async {
     final newPlaylists = <PlaylistModel>[];
     for (var id in playlistIds) {
-      final playlist = playlists.firstWhere(
-        (p) => p.hash == id,
-        orElse: () => PlaylistModel(name: ''),
-      );
+      final playlist = playlists.firstWhere((p) => p.hash == id, orElse: () => PlaylistModel(name: ''));
       if (playlist.name.isNotEmpty) {
         newPlaylists.add(playlist);
       }

@@ -2,8 +2,11 @@ import 'package:boel_downloader/pages/file_path_widget.dart';
 import 'package:boel_downloader/services/download_service.dart';
 import 'package:boel_downloader/models/enums.dart';
 import 'package:boel_downloader/services/shared_prefs.dart';
+import 'package:boel_downloader/services/spotify_api.dart';
 import 'package:boel_downloader/widgets/format_widget.dart';
 import 'package:boel_downloader/widgets/toast.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -23,6 +26,9 @@ class SearchPageState extends State<SearchPage> {
   List<Video> _searchResults = [];
   bool _isLoading = false;
   final _youtubeUrlRegex = RegExp(r'^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|shorts\/)?[A-Za-z0-9_-]+');
+  final _spotifyUrlRegex = RegExp(
+    r'(https?:\/\/(open\.)?spotify\.com\/(intl-[a-zA-Z-]+\/)?(?:track|user|artist|album|playlist|episode|show)\/[a-zA-Z0-9]+(\?.*)?|spotify:(?:track|user|artist|album|playlist|episode|show):[a-zA-Z0-9]+(?:|:playlist:[a-zA-Z0-9]+)|https?:\/\/spotify\.link\/[a-zA-Z0-9]+)',
+  );
   MediaFormat format = MediaFormat.mp4;
 
   @override
@@ -47,7 +53,6 @@ class SearchPageState extends State<SearchPage> {
 
     try {
       if (_youtubeUrlRegex.hasMatch(query)) {
-        // Extrair ID do vídeo do link
         final videoId = VideoId.parseVideoId(query);
         if (videoId != null) {
           final video = await yt.videos.get(videoId);
@@ -55,11 +60,19 @@ class SearchPageState extends State<SearchPage> {
             _searchResults = [video];
           });
         }
+      } else if (_spotifyUrlRegex.hasMatch(query)) {
+        SpotifyMetadata metaData = await SpotifyApi.getData(query);
+        final searchStream = yt.search.search('${metaData.title} ${metaData.artist}');
+        final videos = await searchStream;
+        final results = videos.take(10).toList();
+        setState(() {
+          _searchResults = results;
+        });
       } else {
         // Busca por título
-        final searchStream = yt.search.search(query); // Retorna Stream<Video>
+        final searchStream = yt.search.search(query);
         final videos = await searchStream;
-        final results = videos.take(10).toList(); // Aguarda o Stream e limita a 10 resultados
+        final results = videos.take(10).toList();
         setState(() {
           _searchResults = results;
         });
@@ -99,11 +112,34 @@ class SearchPageState extends State<SearchPage> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 64, 16, 16),
-            child: TextField(
-              controller: _controller,
-              placeholder: Text('Insira o termo de busca ou link.'),
-              features: [InputFeature.trailing(Button(style: ButtonVariance.secondary, child: Icon(HugeIcons.strokeRoundedSearch01), onPressed: () => _handleSearch(_controller.text)))],
-              onSubmitted: _handleSearch,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: 770),
+              child: TextField(
+                controller: _controller,
+                placeholder: Text('Insira o termo de busca ou link.'),
+                features: [
+                  InputFeature.trailing(
+                    Row(
+                      children: [
+                        Button(
+                          style: ButtonVariance.ghost,
+                          child: Icon(HugeIcons.strokeRoundedCopy02),
+                          onPressed: () async {
+                            final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+                            if (clipboardData != null && clipboardData.text != null) {
+                              _controller.text = clipboardData.text!;
+                            }
+                          },
+                        ),
+                        SizedBox(width: 2),
+                        Button(style: ButtonVariance.ghost, child: Icon(HugeIcons.strokeRoundedSearch01), onPressed: () => _handleSearch(_controller.text)),
+                      ],
+                    ),
+                  ),
+                ],
+                onSubmitted: _handleSearch,
+                borderRadius: BorderRadius.circular(40),
+              ),
             ),
           ),
           Expanded(
@@ -111,131 +147,137 @@ class SearchPageState extends State<SearchPage> {
                 ? const Center(child: CircularProgressIndicator(size: 32))
                 : _searchResults.isEmpty
                 ? const Center(child: Text('Nenhum resultado encontrado'))
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: _searchResults.length,
-                    itemBuilder: (context, index) {
-                      final video = _searchResults[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Card(
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Miniatura
-                              Stack(
+                : ScrollConfiguration(
+                    behavior: ScrollBehavior().copyWith(dragDevices: {PointerDeviceKind.mouse}, scrollbars: false),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(maxWidth: 800),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: _searchResults.length,
+                        itemBuilder: (context, index) {
+                          final video = _searchResults[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Card(
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(8),
-                                    child: Image.network(
-                                      video.thumbnails.mediumResUrl,
-                                      width: 120,
-                                      height: 90,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => Container(width: 120, height: 90, color: Colors.gray[300], child: const Icon(HugeIcons.strokeRoundedVideo01)),
+                                  // Miniatura
+                                  Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.network(
+                                          video.thumbnails.mediumResUrl,
+                                          width: 120,
+                                          height: 90,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) => Container(width: 120, height: 90, color: Colors.gray[300], child: const Icon(HugeIcons.strokeRoundedVideo01)),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        right: 4,
+                                        bottom: 4,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                          decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(4)),
+                                          child: Text(
+                                            formatDuration(video.duration!),
+                                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 12),
+                                  // Informações do vídeo
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          video.title,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          video.author,
+                                          // style: TextStyle(color: Colors.gray[600], fontSize: 14),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ).muted,
+                                        Text(
+                                          '${formatViewCount(video.engagement.viewCount)}${video.uploadDate != null ? ' - ${formatUploadDate(video.uploadDate!)}' : ''}',
+                                          // style: TextStyle(color: Colors.gray[600], fontSize: 14),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ).muted,
+                                      ],
                                     ),
                                   ),
-                                  Positioned(
-                                    right: 4,
-                                    bottom: 4,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                      decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(4)),
-                                      child: Text(
-                                        formatDuration(video.duration!),
-                                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
+
+                                  Builder(
+                                    builder: (context) {
+                                      return PrimaryButton(
+                                        onPressed: () {
+                                          showPopover(
+                                            context: context,
+                                            alignment: Alignment.topCenter,
+                                            offset: const Offset(0, 8),
+                                            // Unless you have full opacity surface,
+                                            // you should explicitly set the overlay barrier.
+                                            overlayBarrier: OverlayBarrier(borderRadius: context.theme.borderRadiusLg),
+                                            builder: (context) {
+                                              return ModalContainer(
+                                                child: SizedBox(
+                                                  width: 300,
+                                                  child: Column(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                                                    children: [
+                                                      const Text('Configurar Download').large().medium(),
+                                                      const Text('Escolha o formato').muted(),
+
+                                                      FormatWidget(onFormatChanged: (value) => changeFormat(value)),
+                                                      const Text('Escolha onde salvar o arquivo').muted(),
+
+                                                      FilePathWidget(),
+                                                      PrimaryButton(
+                                                        onPressed: () {
+                                                          downloadVideo(video, format);
+                                                          if (mounted) {
+                                                            showToast(
+                                                              context: mainContext,
+                                                              builder: ToastWarning(title: 'Baixando Video...', subtitle: '"${video.title}"').show,
+                                                              location: ToastLocation.bottomRight,
+                                                            );
+                                                          }
+                                                          closeOverlay(context);
+                                                        },
+                                                        child: const Text('Continuar'),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                          ).future.then((_) {});
+                                        },
+                                        child: const Text('Baixar'),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
-                              const SizedBox(width: 12),
-                              // Informações do vídeo
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      video.title,
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      video.author,
-                                      // style: TextStyle(color: Colors.gray[600], fontSize: 14),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ).muted,
-                                    Text(
-                                      '${formatViewCount(video.engagement.viewCount)}${video.uploadDate != null ? ' - ${formatUploadDate(video.uploadDate!)}' : ''}',
-                                      // style: TextStyle(color: Colors.gray[600], fontSize: 14),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ).muted,
-                                  ],
-                                ),
-                              ),
-
-                              Builder(
-                                builder: (context) {
-                                  return PrimaryButton(
-                                    onPressed: () {
-                                      showPopover(
-                                        context: context,
-                                        alignment: Alignment.topCenter,
-                                        offset: const Offset(0, 8),
-                                        // Unless you have full opacity surface,
-                                        // you should explicitly set the overlay barrier.
-                                        overlayBarrier: OverlayBarrier(borderRadius: context.theme.borderRadiusLg),
-                                        builder: (context) {
-                                          return ModalContainer(
-                                            child: SizedBox(
-                                              width: 300,
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                                children: [
-                                                  const Text('Configurar Download').large().medium(),
-                                                  const Text('Escolha o formato').muted(),
-
-                                                  FormatWidget(onFormatChanged: (value) => changeFormat(value)),
-                                                  const Text('Escolha onde salvar o arquivo').muted(),
-
-                                                  FilePathWidget(),
-                                                  PrimaryButton(
-                                                    onPressed: () {
-                                                      downloadVideo(video, format);
-                                                      if (mounted) {
-                                                        showToast(
-                                                          context: mainContext,
-                                                          builder: ToastWarning(title: 'Baixando Video...', subtitle: '"${video.title}"').show,
-                                                          location: ToastLocation.bottomRight,
-                                                        );
-                                                      }
-                                                      closeOverlay(context);
-                                                    },
-                                                    child: const Text('Continuar'),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ).future.then((_) {});
-                                    },
-                                    child: const Text('Baixar'),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
           ),
         ],

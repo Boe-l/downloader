@@ -353,6 +353,7 @@ class MediaProvider with ChangeNotifier {
   @override
   Future<void> dispose() async {
     _positionTimer?.cancel();
+    _cleanupTimer?.cancel();
     await _filesHandler.dispose();
     _soloud?.deinit();
     await _mediaControl?.cancel();
