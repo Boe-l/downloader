@@ -8,11 +8,11 @@ enum PlaylistMode { none, single, loop, shuffle, repeat }
 
 class PlaylistModel {
   static final Logger _log = Logger('PlaylistModel');
-  final String name;
+  String name;
   final String hash;
   Uint8List? image;
   String? description;
-  final List<Media> mediaFiles;
+  List<Media> mediaFiles;
   int _currentIndex = 0;
   PlaylistMode _playlistMode = PlaylistMode.single;
   List<int> _shuffledIndices = [];

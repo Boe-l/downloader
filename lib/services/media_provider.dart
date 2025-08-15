@@ -93,6 +93,7 @@ class MediaProvider with ChangeNotifier {
   int get currentIndex => _playlistsHandler.currentIndex;
   Media? get currentMedia => _playlistsHandler.currentMedia;
   PlaylistMode get playlistMode => _playlistsHandler.playlistMode;
+  List<PlaylistModel> get playLists => _playlistsHandler.playlists;
   Future<void> setCurrentMedia(Media media) async {
     await _playlistsHandler.setCurrentMedia(media);
     notifyListeners();
@@ -100,6 +101,10 @@ class MediaProvider with ChangeNotifier {
 
   Future<void> nextMedia() async {
     await _playlistsHandler.nextMedia();
+    notifyListeners();
+  }
+
+  void notify() {
     notifyListeners();
   }
 

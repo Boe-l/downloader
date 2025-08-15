@@ -41,12 +41,21 @@ class PlaylistsHandler {
     playlists.add(playlist);
     currentPlaylist ??= playlist;
     await SharedPrefs().savePlaylists(playlists);
-    _log.info('Added playlist: $name');
+    _mediaProvider.notify();
+    _log.info('Added playlist: $name (hash: ${playlist.hash})');
   }
 
-  Future<void> removePlaylist(String name) async {
-    playlists.removeWhere((p) => p.name == name);
-    if (currentPlaylist?.name == name) {
+  Future<void> removePlaylist(String playlistId) async {
+    final removedPlaylist = playlists.firstWhere(
+      (p) => p.hash == playlistId,
+      orElse: () => PlaylistModel(name: ''),
+    );
+    if (removedPlaylist.name.isEmpty) {
+      _log.warning('Playlist with hash $playlistId not found.');
+      return;
+    }
+    playlists.removeWhere((p) => p.hash == playlistId);
+    if (currentPlaylist?.hash == playlistId) {
       currentPlaylist = playlists.isNotEmpty ? playlists.first : null;
       if (currentPlaylist != null && currentPlaylist!.mediaFiles.isNotEmpty) {
         await _mediaProvider.play(currentPlaylist!.mediaFiles[0], isPaused: true);
@@ -55,24 +64,106 @@ class PlaylistsHandler {
       }
     }
     await SharedPrefs().savePlaylists(playlists);
-    _log.info('Removed playlist: $name');
+    _mediaProvider.notify();
+    _log.info('Removed playlist: ${removedPlaylist.name} (hash: $playlistId)');
   }
 
-  void setCurrentPlaylist(String name) {
-    currentPlaylist = playlists.firstWhere((p) => p.name == name, orElse: () => PlaylistModel(name: ''));
+  Future<void> editPlaylist(String playlistId, {String? name, String? description, Uint8List? image}) async {
+    final playlist = playlists.firstWhere(
+      (p) => p.hash == playlistId,
+      orElse: () => PlaylistModel(name: ''),
+    );
+    if (playlist.name.isEmpty) {
+      _log.warning('Playlist with hash $playlistId not found for editing.');
+      return;
+    }
+    if (name != null) playlist.name = name;
+    if (description != null) playlist.description = description;
+    if (image != null) playlist.image = image;
+    await SharedPrefs().savePlaylists(playlists);
+    _mediaProvider.notify();
+    _log.info('Edited playlist: ${playlist.name} (hash: $playlistId)');
+  }
+
+  void setCurrentPlaylist(String playlistId) {
+    final playlist = playlists.firstWhere(
+      (p) => p.hash == playlistId,
+      orElse: () => PlaylistModel(name: ''),
+    );
+    if (playlist.name.isEmpty) {
+      _log.warning('Playlist with hash $playlistId not found.');
+      return;
+    }
+    currentPlaylist = playlist;
     if (currentPlaylist != null && currentPlaylist!.mediaFiles.isNotEmpty) {
       _mediaProvider.play(currentPlaylist!.mediaFiles[0], isPaused: true);
     }
-    _log.info('Set current playlist: $name');
+    _mediaProvider.notify();
+    _log.info('Set current playlist: ${playlist.name} (hash: $playlistId)');
   }
 
   Future<void> addMediaToPlaylist(Media media, String playlistId) async {
-    final playlist = playlists.firstWhere((p) => p.hash == playlistId, orElse: () => PlaylistModel(name: ''));
-    if (playlist.name.isNotEmpty) {
-      await playlist.addMedia(media);
-      await SharedPrefs().savePlaylists(playlists);
-      _log.info('Added media to playlist "$playlistId": ${media.title}');
+    final playlist = playlists.firstWhere(
+      (p) => p.hash == playlistId,
+      orElse: () => PlaylistModel(name: ''),
+    );
+    if (playlist.name.isEmpty) {
+      _log.warning('Playlist with hash $playlistId not found.');
+      return;
     }
+    // Evitar duplicatas
+    if (playlist.mediaFiles.any((m) => m.file.path == media.file.path)) {
+      _log.info('Media ${media.title} already exists in playlist ${playlist.name}.');
+      return;
+    }
+    await playlist.addMedia(media);
+    await SharedPrefs().savePlaylists(playlists);
+    _mediaProvider.notify();
+    _log.info('Added media to playlist "${playlist.name}" (hash: $playlistId): ${media.title}');
+  }
+
+  Future<void> removeMediaFromPlaylist(Media media, String playlistId) async {
+    final playlist = playlists.firstWhere(
+      (p) => p.hash == playlistId,
+      orElse: () => PlaylistModel(name: ''),
+    );
+    if (playlist.name.isEmpty) {
+      _log.warning('Playlist with hash $playlistId not found.');
+      return;
+    }
+    final wasCurrentMedia = playlist.currentMedia?.file.path == media.file.path;
+    playlist.mediaFiles.removeWhere((m) => m.file.path == media.file.path);
+    if (wasCurrentMedia) {
+      if (playlist.mediaFiles.isNotEmpty) {
+        await playlist.setCurrentMedia(playlist.mediaFiles[0]);
+        await _mediaProvider.play(playlist.mediaFiles[0], isPaused: true);
+      } else {
+        await _mediaProvider.stop();
+      }
+    }
+    await SharedPrefs().savePlaylists(playlists);
+    _mediaProvider.notify();
+    _log.info('Removed media from playlist "${playlist.name}" (hash: $playlistId): ${media.title}');
+  }
+
+  Future<void> updatePlaylistOrder(List<String> playlistIds) async {
+    final newPlaylists = <PlaylistModel>[];
+    for (var id in playlistIds) {
+      final playlist = playlists.firstWhere(
+        (p) => p.hash == id,
+        orElse: () => PlaylistModel(name: ''),
+      );
+      if (playlist.name.isNotEmpty) {
+        newPlaylists.add(playlist);
+      }
+    }
+    if (newPlaylists.length != playlists.length) {
+      _log.warning('Some playlist IDs not found during reordering: $playlistIds');
+    }
+    playlists = newPlaylists;
+    await SharedPrefs().savePlaylists(playlists);
+    _mediaProvider.notify();
+    _log.info('Updated playlist order: ${playlists.map((p) => p.name).toList()}');
   }
 
   List<PlaylistModel> getAllPlaylists() => playlists;
@@ -84,6 +175,7 @@ class PlaylistsHandler {
       if (currentPlaylist!.currentMedia != null) {
         await _mediaProvider.play(currentPlaylist!.currentMedia!, isPaused: false);
       }
+      _mediaProvider.notify();
     }
   }
 
@@ -93,6 +185,7 @@ class PlaylistsHandler {
       if (currentPlaylist!.currentMedia != null) {
         await _mediaProvider.play(currentPlaylist!.currentMedia!, isPaused: false);
       }
+      _mediaProvider.notify();
     }
   }
 
@@ -102,6 +195,7 @@ class PlaylistsHandler {
       if (currentPlaylist!.currentMedia != null) {
         await _mediaProvider.play(currentPlaylist!.currentMedia!, isPaused: false);
       }
+      _mediaProvider.notify();
     }
   }
 
@@ -109,6 +203,7 @@ class PlaylistsHandler {
     if (currentPlaylist != null) {
       await currentPlaylist!.setPlaylistMode(mode);
       await SharedPrefs().savePlaylists(playlists);
+      _mediaProvider.notify();
     }
   }
 

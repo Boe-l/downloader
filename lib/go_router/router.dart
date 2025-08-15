@@ -1,11 +1,14 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
+import 'package:boel_downloader/models/playlists.dart';
 import 'package:boel_downloader/pages/downloads_page.dart';
 import 'package:boel_downloader/pages/player_page.dart';
+import 'package:boel_downloader/services/media_provider.dart';
 import 'package:boel_downloader/widgets/visualizer.dart';
 import 'package:boel_downloader/widgets/search_page.dart';
 import 'package:boel_downloader/widgets/main_widget.dart';
 import 'package:boel_downloader/widgets/windows.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 class AppRouter {
@@ -45,18 +48,22 @@ class AppRouter {
                   return ShaderVisualizer();
                 },
               ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
               GoRoute(
-                path: '/player',
+                path: '/playlists/:id',
                 builder: (context, state) {
-                  return AudioPlayerPage();
+                  final playlistId = state.pathParameters['id'];
+                  final mediaProvider = Provider.of<MediaProvider>(context, listen: false);
+                  final playlist = mediaProvider.playLists.firstWhere((p) => p.hash == playlistId, orElse: () => PlaylistModel(name: ''));
+                  return AudioPlayerPage(playlist: playlist,);
                 },
               ),
             ],
           ),
+          // StatefulShellBranch(
+          //   routes: [
+              
+          //   ],
+          // ),
           StatefulShellBranch(
             routes: [
               GoRoute(

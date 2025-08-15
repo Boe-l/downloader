@@ -1,3 +1,4 @@
+import 'package:boel_downloader/models/playlists.dart';
 import 'package:boel_downloader/widgets/song_list.dart';
 import 'package:boel_downloader/widgets/visualizer.dart';
 import 'package:flutter_quill/flutter_quill.dart';
@@ -7,7 +8,9 @@ import 'package:shadcn_flutter/shadcn_flutter.dart';
 
 //TODO Salvar alterações do usuario
 class AudioPlayerPage extends StatefulWidget {
-  const AudioPlayerPage({super.key});
+  final PlaylistModel? playlist;
+
+  const AudioPlayerPage({super.key, this.playlist});
 
   @override
   State<AudioPlayerPage> createState() => _AudioPlayerPageState();
@@ -46,7 +49,7 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
         dividerBuilder: (context) => VerticalDivider(thickness: 2),
 
         children: [
-          ResizablePane.controlled(controller: controller, minSize: 260, child: SongList()),
+          ResizablePane.controlled(controller: controller, minSize: 260, child: SongList(playlist: widget.playlist,)),
 
           ResizablePane.controlled(
             controller: controller2,
@@ -133,7 +136,8 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
                           ),
                         ),
                       ] else
-                        Flexible(child: ShaderVisualizer()),
+                        // Flexible(child: ShaderVisualizer()),
+                        SizedBox.shrink(),
                       Spacer(),
                       SizedBox(
                         height: 60,
