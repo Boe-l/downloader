@@ -1,5 +1,5 @@
-
 import 'package:boel_downloader/widgets/song_list.dart';
+import 'package:boel_downloader/widgets/visualizer.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill/quill_delta.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -69,64 +69,86 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
                   );
                 }
                 return Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 30, 0, 110),
+                  padding: const EdgeInsets.fromLTRB(0, 30, 0, 0),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Card(
-                          padding: EdgeInsets.all(3),
-                          child: QuillSimpleToolbar(
-                            controller: _quillController,
-                            config: const QuillSimpleToolbarConfig(
-                              multiRowsDisplay: false,
-                              showCenterAlignment: false,
-                              showIndent: false,
-                              showAlignmentButtons: false,
-                              showCodeBlock: false,
-                              showSearchButton: false,
-                              showInlineCode: false,
-                              showLink: false,
-                              showColorButton: false,
-                              showStrikeThrough: false,
-                              showClearFormat: false,
-                              showListBullets: false,
-                              showQuote: false,
-                              showRedo: false,
-                              showUndo: false,
-                              showSubscript: false,
-                              showSuperscript: false,
-                              showListCheck: false,
-                              showRightAlignment: false,
-                              showListNumbers: false,
-                              showDirection: false,
-                              showJustifyAlignment: false,
-                              showLeftAlignment: false,
-                              showLineHeightButton: false,
-                              showUnderLineButton: false,
-                              showSmallButton: false,
-                              showBackgroundColorButton: false,
-                              showClipboardCopy: false,
-                              showClipboardCut: false,
-                              showClipboardPaste: true,
-                              showFontFamily: false,
-                              showFontSize: false,
-                              toolbarRunSpacing: 0,
-                              headerStyleType: HeaderStyleType.buttons,
+                      if (selected == 1) ...[
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Card(
+                            padding: EdgeInsets.all(3),
+                            child: QuillSimpleToolbar(
+                              controller: _quillController,
+                              config: const QuillSimpleToolbarConfig(
+                                multiRowsDisplay: false,
+                                showCenterAlignment: false,
+                                showIndent: false,
+                                showAlignmentButtons: false,
+                                showCodeBlock: false,
+                                showSearchButton: false,
+                                showInlineCode: false,
+                                showLink: false,
+                                showColorButton: false,
+                                showStrikeThrough: false,
+                                showClearFormat: false,
+                                showListBullets: false,
+                                showQuote: false,
+                                showRedo: false,
+                                showUndo: false,
+                                showSubscript: false,
+                                showSuperscript: false,
+                                showListCheck: false,
+                                showRightAlignment: false,
+                                showListNumbers: false,
+                                showDirection: false,
+                                showJustifyAlignment: false,
+                                showLeftAlignment: false,
+                                showLineHeightButton: false,
+                                showUnderLineButton: false,
+                                showSmallButton: false,
+                                showBackgroundColorButton: false,
+                                showClipboardCopy: false,
+                                showClipboardCut: false,
+                                showClipboardPaste: true,
+                                showFontFamily: false,
+                                showFontSize: false,
+                                toolbarRunSpacing: 0,
+                                headerStyleType: HeaderStyleType.buttons,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Divider(height: 10),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SingleChildScrollView(
-                            child: QuillEditor.basic(
-                              controller: _quillController,
-                              config: const QuillEditorConfig(customStyles: DefaultStyles()),
+                        Divider(height: 10),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: SingleChildScrollView(
+                              child: QuillEditor.basic(
+                                controller: _quillController,
+                                config: const QuillEditorConfig(customStyles: DefaultStyles()),
+                              ),
                             ),
                           ),
+                        ),
+                      ] else
+                        Flexible(child: ShaderVisualizer()),
+                      Spacer(),
+                      SizedBox(
+                        height: 60,
+                        child: NavigationRail(
+                          alignment: alignment,
+                          labelType: labelType,
+                          index: selected,
+                          direction: Axis.horizontal,
+                          onSelected: (value) {
+                            setState(() {
+                              selected = value;
+                            });
+                          },
+                          labelPosition: labelPosition,
+                          children: [buildButton('Visualizador', HugeIcons.strokeRoundedActivity03), buildButton('Letra', HugeIcons.strokeRoundedBookOpen01)],
                         ),
                       ),
                     ],
@@ -137,6 +159,21 @@ class _AudioPlayerPageState extends State<AudioPlayerPage> {
           ),
         ],
       ),
+    );
+  }
+
+  NavigationRailAlignment alignment = NavigationRailAlignment.center;
+  NavigationLabelType labelType = NavigationLabelType.tooltip;
+  NavigationLabelPosition labelPosition = NavigationLabelPosition.bottom;
+  int selected = 0;
+  bool customButtonStyle = false;
+  bool expanded = true;
+  NavigationItem buildButton(String label, IconData icon) {
+    return NavigationItem(
+      style: customButtonStyle ? const ButtonStyle.muted(density: ButtonDensity.icon) : null,
+      selectedStyle: customButtonStyle ? const ButtonStyle.fixed(density: ButtonDensity.icon) : null,
+      label: Text(label),
+      child: Icon(icon),
     );
   }
 }

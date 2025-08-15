@@ -83,7 +83,7 @@ class DownloadService with ChangeNotifier {
   }
 
   Future<void> startDownload(Video video, BuildContext context, MediaFormat type) async {
-    String? savedPath = await _prefs.getPath();
+    String? savedPath = await _prefs.getDownloadSavePath();
     Directory directory = Directory(savedPath ?? (await getDownloadsDirectory())!.path);
     // Only check FFmpeg setup for downloads
 
@@ -286,7 +286,7 @@ class DownloadService with ChangeNotifier {
     String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
 
     if (selectedDirectory != null) {
-      await _prefs.savePath(selectedDirectory);
+      await _prefs.setDownloadSavePath(selectedDirectory);
       return true;
     } else {
       return false;

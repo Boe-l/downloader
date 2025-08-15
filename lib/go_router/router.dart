@@ -1,6 +1,7 @@
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:boel_downloader/pages/downloads_page.dart';
 import 'package:boel_downloader/pages/player_page.dart';
+import 'package:boel_downloader/widgets/visualizer.dart';
 import 'package:boel_downloader/widgets/search_page.dart';
 import 'package:boel_downloader/widgets/main_widget.dart';
 import 'package:boel_downloader/widgets/windows.dart';
@@ -41,7 +42,7 @@ class AppRouter {
               GoRoute(
                 path: '/playlists',
                 builder: (context, state) {
-                  return Placeholder();
+                  return ShaderVisualizer();
                 },
               ),
             ],

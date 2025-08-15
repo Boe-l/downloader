@@ -1,5 +1,7 @@
 import 'dart:ui';
+import 'package:boel_downloader/services/files_provider.dart';
 import 'package:boel_downloader/services/media_provider.dart';
+import 'package:boel_downloader/services/playlist_provider.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:provider/provider.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
@@ -29,7 +31,11 @@ class _SongListState extends State<SongList> {
                 child: Row(
                   children: [
                     ExcludeFocus(
-                      child: Button(style: ButtonVariance.menubar, onPressed: () => context.read<MediaProvider>().loadMediaFromFolder(), child: const Icon(HugeIcons.strokeRoundedFolderAdd)),
+                      child: Button(
+                        style: ButtonVariance.menubar,
+                        onPressed: () => Provider.of<MediaProvider>(context, listen: false).addFolderPath(),
+                        child: const Icon(HugeIcons.strokeRoundedFolderAdd),
+                      ),
                     ),
                     Text('Titulo'),
                     Spacer(),
@@ -38,9 +44,9 @@ class _SongListState extends State<SongList> {
                     Text('Artista'),
                     SizedBox(width: 96),
 
-                    Spacer(flex: 2,),
+                    Spacer(flex: 2),
                     Text('Duração'),
-                    SizedBox(width: 30,)
+                    SizedBox(width: 30),
                   ],
                 ),
               ),
@@ -60,14 +66,13 @@ class _SongListState extends State<SongList> {
               child: ScrollConfiguration(
                 behavior: const ScrollBehavior().copyWith(scrollbars: false, overscroll: true, dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch}),
                 child: SingleChildScrollView(
-                  child: Selector<MediaProvider, (int, int)>(
-                    selector: (_, provider) => (provider.currentIndex, provider.mediaFiles.length),
-                    builder: (context, data, child) {
-                      final provider = context.read<MediaProvider>();
+                  child: Consumer<MediaProvider>(
+                    // : (_, provider) => (provider.currentIndex, provider.mediaFiles.length),
+                    builder: (context, mediaProvider, child) {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ...provider.mediaFiles.asMap().entries.map((entry) {
+                          ...mediaProvider.mediaFiles.asMap().entries.map((entry) {
                             final index = entry.key;
                             final media = entry.value;
                             final isHovered = _hoveredIndex == index;
@@ -89,7 +94,7 @@ class _SongListState extends State<SongList> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: GestureDetector(
-                                      onTap: () => provider.setCurrentMedia(media),
+                                      onTap: () => mediaProvider.setCurrentMedia(media),
                                       child: Row(
                                         children: [
                                           // Song number or play icon with AnimatedSwitcher
@@ -98,11 +103,11 @@ class _SongListState extends State<SongList> {
                                             child: SizedBox(
                                               key: ValueKey<int>(index), // Unique key based on index
                                               width: 40,
-                                              child: isHovered || index == provider.currentIndex
-                                                  ? Icon(Icons.play_arrow, color: index == provider.currentIndex ? Colors.green : Colors.white)
+                                              child: isHovered || index == mediaProvider.currentIndex
+                                                  ? Icon(Icons.play_arrow, color: index == mediaProvider.currentIndex ? Colors.green : Colors.white)
                                                   : Text(
                                                       '${index + 1}',
-                                                      style: TextStyle(fontWeight: index == provider.currentIndex ? FontWeight.bold : FontWeight.normal),
+                                                      style: TextStyle(fontWeight: index == mediaProvider.currentIndex ? FontWeight.bold : FontWeight.normal),
                                                       textAlign: TextAlign.center,
                                                     ),
                                             ),
@@ -120,7 +125,7 @@ class _SongListState extends State<SongList> {
                                                     child: Text(
                                                       media.title,
                                                       style: TextStyle(
-                                                        color: index == provider.currentIndex ? Colors.green : Colors.white,
+                                                        color: index == mediaProvider.currentIndex ? Colors.green : Colors.white,
                                                         // fontWeight: index == provider.currentIndex ? FontWeight.bold : FontWeight.normal,
                                                       ),
                                                       maxLines: 1,
@@ -130,7 +135,7 @@ class _SongListState extends State<SongList> {
                                                 : Text(
                                                     media.title,
                                                     style: TextStyle(
-                                                      color: index == provider.currentIndex ? Colors.green : Colors.white,
+                                                      color: index == mediaProvider.currentIndex ? Colors.green : Colors.white,
                                                       // fontWeight: index == provider.currentIndex ? FontWeight.bold : FontWeight.normal,
                                                     ),
                                                     maxLines: 1,
@@ -148,10 +153,7 @@ class _SongListState extends State<SongList> {
                                           // Duration (fixed width, right-aligned)
                                           SizedBox(
                                             width: 50,
-                                            child: Text(
-                                              formatDuration(media.duration), style: TextStyle(fontSize: 13),
-                                              textAlign: TextAlign.right,
-                                            ).muted,
+                                            child: Text(formatDuration(media.duration), style: TextStyle(fontSize: 13), textAlign: TextAlign.right).muted,
                                           ),
                                           // Spacer(flex: 1,),
                                           SizedBox(width: 40),

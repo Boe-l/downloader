@@ -1,3 +1,4 @@
+import 'package:boel_downloader/services/playlist_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -17,13 +18,15 @@ class TecladoOuvidorState extends State<TecladoOuvidor> {
   DateTime? _lastSeekStart;
   int _seekInterval = 5;
   final _seekSubject = PublishSubject<bool>();
+  late final MediaProvider mediaProvider;
 
   @override
   void initState() {
+    mediaProvider = Provider.of<MediaProvider>(context, listen: false);
     super.initState();
     _seekSubject.throttleTime(Duration(milliseconds: 80), trailing: false).listen((isForward) {
       if (mounted) {
-        _handleSeek(context.read<MediaProvider>(), isForward);
+        _handleSeek(mediaProvider, isForward);
       }
     });
   }
@@ -65,81 +68,77 @@ class TecladoOuvidorState extends State<TecladoOuvidor> {
           FocusScope.of(context).requestFocus();
         }
       },
-      child: Consumer<MediaProvider>(
-        builder: (context, provider, _) {
-          return Shortcuts(
-            shortcuts: {
-              // Teclas solo para navegação
-              LogicalKeySet(LogicalKeyboardKey.arrowRight): AvancarMusicaIntent(),
-              LogicalKeySet(LogicalKeyboardKey.numpad6): AvancarMusicaIntent(),
-              LogicalKeySet(LogicalKeyboardKey.arrowLeft): RetrocederMusicaIntent(),
-              LogicalKeySet(LogicalKeyboardKey.numpad4): RetrocederMusicaIntent(),
-              LogicalKeySet(LogicalKeyboardKey.space): PausarIntent(),
-              LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyQ): RetrocederMusicaIntent(),
-              LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyE): AvancarMusicaIntent(),
-              LogicalKeySet(LogicalKeyboardKey.arrowUp): AumentarVolumeIntent(),
-              LogicalKeySet(LogicalKeyboardKey.arrowDown): DiminuirVolumeIntent(),
-              LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowLeft): RetrocederCtrlIntent(),
-              LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowRight): AvancarCtrlIntent(),
-              LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowUp): AumentarVolumeIntent(),
-              LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowDown): DiminuirVolumeIntent(),
-              LogicalKeySet(LogicalKeyboardKey.alt, LogicalKeyboardKey.space): PausarAltIntent(),
-            },
-            child: Actions(
-              actions: {
-                AvancarMusicaIntent: CallbackAction<AvancarMusicaIntent>(
-                  onInvoke: (intent) {
-                    provider.nextMedia();
-                    return null;
-                  },
-                ),
-                RetrocederMusicaIntent: CallbackAction<RetrocederMusicaIntent>(
-                  onInvoke: (intent) {
-                    provider.previousMedia();
-                    return null;
-                  },
-                ),
-                PausarIntent: CallbackAction<PausarIntent>(
-                  onInvoke: (intent) async {
-                    await provider.togglePlayPause();
-                    return null;
-                  },
-                ),
-                AumentarVolumeIntent: CallbackAction<AumentarVolumeIntent>(
-                  onInvoke: (intent) {
-                    provider.setVolume((provider.player.state.volume + 0.07).clamp(0.0, 1.0));
-                    return null;
-                  },
-                ),
-                DiminuirVolumeIntent: CallbackAction<DiminuirVolumeIntent>(
-                  onInvoke: (intent) {
-                    provider.setVolume((provider.player.state.volume - 0.07).clamp(0.0, 1.0));
-                    return null;
-                  },
-                ),
-                AvancarCtrlIntent: CallbackAction<AvancarCtrlIntent>(
-                  onInvoke: (intent) {
-                    _seekSubject.add(true);
-                    return null;
-                  },
-                ),
-                RetrocederCtrlIntent: CallbackAction<RetrocederCtrlIntent>(
-                  onInvoke: (intent) {
-                    _seekSubject.add(false);
-                    return null;
-                  },
-                ),
-                PausarAltIntent: CallbackAction<PausarAltIntent>(
-                  onInvoke: (intent) async {
-                    await provider.togglePlayPause();
-                    return null;
-                  },
-                ),
-              },
-              child: Focus(autofocus: true, skipTraversal: true, canRequestFocus: true, child: widget.child),
-            ),
-          );
+      child: Shortcuts(
+        shortcuts: {
+          // Teclas solo para navegação
+          LogicalKeySet(LogicalKeyboardKey.arrowRight): AvancarMusicaIntent(),
+          LogicalKeySet(LogicalKeyboardKey.numpad6): AvancarMusicaIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowLeft): RetrocederMusicaIntent(),
+          LogicalKeySet(LogicalKeyboardKey.numpad4): RetrocederMusicaIntent(),
+          LogicalKeySet(LogicalKeyboardKey.space): PausarIntent(),
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyQ): RetrocederMusicaIntent(),
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyE): AvancarMusicaIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowUp): AumentarVolumeIntent(),
+          LogicalKeySet(LogicalKeyboardKey.arrowDown): DiminuirVolumeIntent(),
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowLeft): RetrocederCtrlIntent(),
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowRight): AvancarCtrlIntent(),
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowUp): AumentarVolumeIntent(),
+          LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.arrowDown): DiminuirVolumeIntent(),
+          LogicalKeySet(LogicalKeyboardKey.alt, LogicalKeyboardKey.space): PausarAltIntent(),
         },
+        child: Actions(
+          actions: {
+            AvancarMusicaIntent: CallbackAction<AvancarMusicaIntent>(
+              onInvoke: (intent) {
+                mediaProvider.nextMedia();
+                return null;
+              },
+            ),
+            RetrocederMusicaIntent: CallbackAction<RetrocederMusicaIntent>(
+              onInvoke: (intent) {
+                mediaProvider.previousMedia();
+                return null;
+              },
+            ),
+            PausarIntent: CallbackAction<PausarIntent>(
+              onInvoke: (intent) async {
+                await mediaProvider.togglePlayPause();
+                return null;
+              },
+            ),
+            AumentarVolumeIntent: CallbackAction<AumentarVolumeIntent>(
+              onInvoke: (intent) {
+                mediaProvider.setVolume((mediaProvider.player.state.volume + 0.07).clamp(0.0, 1.0));
+                return null;
+              },
+            ),
+            DiminuirVolumeIntent: CallbackAction<DiminuirVolumeIntent>(
+              onInvoke: (intent) {
+                mediaProvider.setVolume((mediaProvider.player.state.volume - 0.07).clamp(0.0, 1.0));
+                return null;
+              },
+            ),
+            AvancarCtrlIntent: CallbackAction<AvancarCtrlIntent>(
+              onInvoke: (intent) {
+                _seekSubject.add(true);
+                return null;
+              },
+            ),
+            RetrocederCtrlIntent: CallbackAction<RetrocederCtrlIntent>(
+              onInvoke: (intent) {
+                _seekSubject.add(false);
+                return null;
+              },
+            ),
+            PausarAltIntent: CallbackAction<PausarAltIntent>(
+              onInvoke: (intent) async {
+                await mediaProvider.togglePlayPause();
+                return null;
+              },
+            ),
+          },
+          child: Focus(autofocus: true, skipTraversal: true, canRequestFocus: true, child: widget.child),
+        ),
       ),
     );
   }

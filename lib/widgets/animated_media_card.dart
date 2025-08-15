@@ -1,5 +1,6 @@
 import 'package:boel_downloader/pages/equalizer.dart';
 import 'package:boel_downloader/services/media_provider.dart';
+import 'package:boel_downloader/services/playlist_provider.dart';
 import 'package:boel_downloader/tools/Throttler.dart';
 import 'package:boel_downloader/widgets/effect_knobs.dart';
 import 'package:flutter/gestures.dart';
@@ -22,7 +23,8 @@ class AnimatedMediaCard extends StatefulWidget {
 class AnimatedMediaCardState extends State<AnimatedMediaCard> {
   final ValueNotifier<bool> _isExpanded = ValueNotifier<bool>(false);
   final ValueNotifier<bool> _showContent = ValueNotifier<bool>(false);
-  final Throttler _throttler = Throttler(milliseconds: 1200);
+  final Throttler buttonThrottler = Throttler(milliseconds: 1200);
+  final Throttler sliderThrottler = Throttler(milliseconds: 200);
   @override
   void dispose() {
     _isExpanded.dispose();
@@ -55,17 +57,17 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
             height: isExpanded ? 90 : 20,
             child: ClipRect(
               child: Consumer<MediaProvider>(
-                builder: (context, provider, child) {
-                  final title = provider.currentMedia?.title ?? '';
-                  final author = provider.currentMedia?.artist ?? '';
-                  final image = provider.currentMedia?.image;
+                builder: (context, mediaProvider, child) {
+                  final title = mediaProvider.currentMedia?.title ?? '';
+                  final author = mediaProvider.currentMedia?.artist ?? '';
+                  final image = mediaProvider.currentMedia?.image;
                   return Stack(
                     children: [
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           GestureDetector(
-                            onTap: () => _throttler.run(() {
+                            onTap: () => buttonThrottler.run(() {
                               switchHeight();
                             }),
                             child: MouseRegion(
@@ -110,42 +112,56 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
                                                   children: [
                                                     Button(
                                                       style: ButtonVariance.ghost,
-                                                      onPressed: () => _throttler.run(() => provider.previousMedia()),
+                                                      onPressed: () => buttonThrottler.run(() => mediaProvider.previousMedia()),
                                                       child: const Icon(HugeIcons.strokeRoundedPrevious, size: 20),
                                                     ),
                                                     const SizedBox(width: 6),
                                                     Button(
                                                       style: ButtonVariance.primary.withBorderRadius(borderRadius: const BorderRadius.all(Radius.circular(20))),
                                                       disableHoverEffect: true,
-                                                      onPressed: () => provider.togglePlayPause(),
-                                                      child: Icon(size: 20, provider.currentMedia != null && provider.isPlaying ? HugeIcons.strokeRoundedPause : HugeIcons.strokeRoundedPlay),
+                                                      onPressed: () => mediaProvider.togglePlayPause(),
+                                                      child: Icon(size: 20, mediaProvider.currentMedia != null && mediaProvider.isPlaying ? HugeIcons.strokeRoundedPause : HugeIcons.strokeRoundedPlay),
                                                     ),
                                                     const SizedBox(width: 6),
                                                     Button(
                                                       style: ButtonVariance.ghost,
-                                                      onPressed: () => _throttler.run(() => provider.nextMedia()),
+                                                      onPressed: () => buttonThrottler.run(() => mediaProvider.nextMedia()),
                                                       child: const Icon(HugeIcons.strokeRoundedNext, size: 20),
                                                     ),
                                                   ],
                                                 ),
                                                 ConstrainedBox(
-                                                  constraints: const BoxConstraints(maxWidth: 600),
+                                                  constraints: const BoxConstraints(maxWidth: 500),
                                                   child: Row(
                                                     mainAxisAlignment: MainAxisAlignment.center,
                                                     children: [
-                                                      SizedBox(width: 60, child: Text(provider.currentMedia != null ? formatDuration(provider.position) : '00:00', textAlign: TextAlign.left)),
+                                                      SizedBox(
+                                                        width: 80,
+                                                        child: Text(mediaProvider.currentMedia != null ? formatDuration(mediaProvider.position) : '00:00', textAlign: TextAlign.left),
+                                                      ),
                                                       Expanded(
                                                         child: Slider(
-                                                          value: SliderValue.single(provider.currentMedia != null ? provider.position.inSeconds.toDouble() : 0.0),
-                                                          max: provider.currentMedia != null && provider.duration.inSeconds > 0 ? provider.duration.inSeconds.toDouble() : 1.0,
-                                                          onChanged: provider.currentMedia != null
+                                                          value: SliderValue.single(mediaProvider.currentMedia != null ? mediaProvider.position.inSeconds.toDouble() : 0.0),
+                                                          max: mediaProvider.currentMedia != null && mediaProvider.duration.inSeconds > 0 ? mediaProvider.duration.inSeconds.toDouble() : 1.0,
+                                                          onChanged: mediaProvider.currentMedia != null
                                                               ? (value) {
-                                                                  provider.seek(Duration(seconds: value.value.toInt()));
+                                                                  // if (mediaProvider.currentMedia!.duration < Duration(minutes: 10)) {
+                                                                    sliderThrottler.run(() => mediaProvider.seek(Duration(seconds: value.value.toInt())));
+                                                                  // }
                                                                 }
                                                               : null,
+                                                          // onChangeEnd: mediaProvider.currentMedia != null
+                                                          //     ? (value) {
+                                                          //         mediaProvider.seek(Duration(seconds: value.value.toInt()));
+                                                          //       }
+                                                          //     : null,
                                                         ),
                                                       ),
-                                                      SizedBox(width: 60, child: Text(provider.currentMedia != null ? formatDuration(provider.duration) : '00:00', textAlign: TextAlign.right)),
+                                                      SizedBox(
+                                                        width: 80,
+                                                        height: 20,
+                                                        child: Text(mediaProvider.currentMedia != null ? formatDuration(mediaProvider.duration) : '00:00', textAlign: TextAlign.right),
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
@@ -203,9 +219,9 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
                                                                 child: SizedBox(
                                                                   width: 100,
                                                                   child: Slider(
-                                                                    value: SliderValue.single(provider.currentMedia != null ? provider.player.state.volume : 1.0),
+                                                                    value: SliderValue.single(mediaProvider.currentMedia != null ? provider.player.state.volume : 1.0),
                                                                     max: 1.0,
-                                                                    onChanged: provider.currentMedia != null
+                                                                    onChanged: mediaProvider.currentMedia != null
                                                                         ? (value) {
                                                                             provider.setVolume(value.value);
                                                                             provider.player.state.volume = value.value;
@@ -277,11 +293,11 @@ class AnimatedMediaCardState extends State<AnimatedMediaCard> {
                                   duration: const Duration(milliseconds: 300),
                                   opacity: isExpanded ? 0.0 : 1.0,
                                   child: GestureDetector(
-                                    onTap: () => _throttler.run(() {
+                                    onTap: () => buttonThrottler.run(() {
                                       switchHeight();
                                     }),
                                     child: MouseRegion(
-                              cursor: SystemMouseCursors.click,
+                                      cursor: SystemMouseCursors.click,
                                       child: Row(
                                         children: [
                                           SizedBox(width: 72),

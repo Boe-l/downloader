@@ -18,19 +18,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 void main() async {
   Logger.root.level = kDebugMode ? Level.FINE : Level.INFO;
   Logger.root.onRecord.listen((record) {
-    dev.log(
-      record.message,
-      time: record.time,
-      level: record.level.value,
-      name: record.loggerName,
-      zone: record.zone,
-      error: record.error,
-      stackTrace: record.stackTrace,
-    );
+    dev.log(record.message, time: record.time, level: record.level.value, name: record.loggerName, zone: record.zone, error: record.error, stackTrace: record.stackTrace);
   });
 
   await FFMpegHelper.instance.initialize();
   // MediaKit.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
     MultiProvider(
       providers: [
@@ -39,12 +32,7 @@ void main() async {
       ],
       child: TecladoOuvidor(
         child: ShadcnApp.router(
-          localizationsDelegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            FlutterQuillLocalizations.delegate,
-          ],
+          localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate, GlobalWidgetsLocalizations.delegate, FlutterQuillLocalizations.delegate],
           title: 'Baixador do BoelLabs',
           // home: MainWidget(),
           debugShowCheckedModeBanner: false,

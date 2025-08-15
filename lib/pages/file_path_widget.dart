@@ -21,7 +21,7 @@ class _FilePathWidgetState extends State<FilePathWidget> {
   }
 
   getSavedPath() async {
-    savedPath = await SharedPrefs().getPath() ?? (await getDownloadsDirectory())!.path;
+    savedPath = await SharedPrefs().getDownloadSavePath() ?? (await getDownloadsDirectory())!.path;
     setState(() {});
   }
 

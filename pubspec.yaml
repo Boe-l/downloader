@@ -60,8 +60,14 @@ dependencies:
   dio: ^5.8.0+1
   flutter_quill: ^11.4.2 # letra
   # audio_flux: ^1.2.1 #seria interessante para um visualizador de audio...
+  model_viewer_plus: ^1.9.3
+  audio_flux: ^1.2.1
   flutter_localizations:
     sdk: flutter
+  simple_3d: ^16.0.2
+  util_simple_3d: ^12.0.2
+  simple_3d_renderer: ^22.0.2
+  convert_simple_3d: ^0.0.7
 
 dev_dependencies:
   flutter_test:
@@ -85,10 +91,20 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-    #   - images/a_dot_burr.jpeg
-    #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/record.jpg
 
+  shaders:
+  - assets/shaders/2d_led_spectrum.frag
+  - assets/shaders/frequency_visualization.frag
+  - assets/shaders/sound_eclipse_rpm.frag
+  - assets/shaders/audio_wave_form.frag
+  - assets/shaders/sound_sinus_wave.frag
+  - assets/shaders/audio_visualizer_raymarching.frag
+  - assets/shaders/sound_grid.frag
+  - assets/shaders/smoke_rings.frag
+  - assets/shaders/dancing_flutter.frag
+  - assets/shaders/texture.frag
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
